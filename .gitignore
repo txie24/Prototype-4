@@ -117,9 +117,5 @@ Prototype4_FMOD/.cache/
 # Ignore user-specific settings (window layouts, last opened paths)
 Prototype4_FMOD/.user/
 
-# Ignore the internal Build folder inside the FMOD project.
-# (Note: We only need the banks that are copied to Assets/StreamingAssets)
-Prototype4_FMOD/Build/
-
 # (Optional) Ignore autosaves if you don't want to clutter history
 Prototype4_FMOD/Metadata/.autosave
