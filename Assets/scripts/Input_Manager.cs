@@ -43,10 +43,11 @@ public class Input_Manager : MonoBehaviour
         for (int i = 0; i < actions.Count; i++)
         {
             InputActionKey iter = actions[i];
-            iter.held = Input.GetKey(iter.actionName);
-            iter.down = Input.GetKeyDown(iter.actionName);
-            iter.released = Input.GetKeyUp(iter.actionName);
+            iter.held = Input.GetKey(iter.code);
+            iter.down = Input.GetKeyDown(iter.code);
+            iter.released = Input.GetKeyUp(iter.code);
             actions[i] = iter;
+            //Debug.Log(iter.actionName + " held: " + iter.held);
         }
     }
     
