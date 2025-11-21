@@ -21,10 +21,16 @@ public class hook_gun_controller : MonoBehaviour
     void LateUpdate()
     {
         fire_key = IM.GetAction("fire");
-        if (fire_key.down && !HB.isLerping)
+        if (fire_key.down && !HB.isLerping && HB.hooked_object_transform == null)
         {
             //Debug.Log("attempting to fire");
             StartCoroutine(HB.Hook_Shoot(mainCam.transform.forward*range+mainCam.transform.position , 0.5f));
+        }else if (fire_key.down && !HB.isLerping)
+        {
+            HB.rb_cache.isKinematic = false;
+            HB.rb_cache = null;
+            HB.hooked_object_transform.parent = null;
+            HB.hooked_object_transform = null;
         }
     }
 }

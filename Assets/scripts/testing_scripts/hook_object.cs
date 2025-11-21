@@ -12,7 +12,7 @@ public class hook_object : MonoBehaviour
     {
         if(HB.hooked_object_transform == null && HB.isLerping)
         {
-            Debug.Log("trying to hook object");
+            //Debug.Log("trying to hook object");
             HB.hooked_object_transform = other.transform;
             HB.hooked_object_transform.parent = HB.hook_object;
             other.attachedRigidbody.isKinematic = true;

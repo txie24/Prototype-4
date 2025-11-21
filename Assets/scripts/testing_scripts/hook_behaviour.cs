@@ -22,7 +22,7 @@ public class hook_behaviour : MonoBehaviour
     {
         if(hooked_object_transform == null)
         {
-            Debug.Log("trying to hook object");
+            //Debug.Log("trying to hook object");
             hooked_object_transform = other.transform;
             hooked_object_transform.parent = hook_object;
             other.attachedRigidbody.isKinematic = true;
@@ -70,13 +70,7 @@ public class hook_behaviour : MonoBehaviour
         hook_object.position = return_point.position;
         hookLine.enabled = false;
 
-        if(hooked_object_transform != null)
-        {
-            rb_cache.isKinematic = false;
-            rb_cache = null;
-            hooked_object_transform.parent = null;
-            hooked_object_transform = null;
-        }
+        
         
         yield return null;
     }
