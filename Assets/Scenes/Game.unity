@@ -242,6 +242,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 1290144417}
+    - targetCorrespondingSourceObject: {fileID: 8515472688152868816, guid: a1dcd447bfbb3bc45821f8b436c031d2,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1290144418}
   m_SourcePrefab: {fileID: 100100000, guid: a1dcd447bfbb3bc45821f8b436c031d2, type: 3}
 --- !u!1 &105105692 stripped
 GameObject:
@@ -863,6 +867,23 @@ MonoBehaviour:
   rollSpeed: 0.8
   pitchAngle: 2
   pitchSpeed: 0.6
+--- !u!114 &1290144418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1290144416}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a1812819f011e24e92c1fbaa979cc14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShipSteering
+  shipTurnSpeed: 30
+  wheelRotateSpeed: 200
+  maxWheelAngle: 180
+  playerTransform: {fileID: 1641413753}
+  interactionDistance: 1.5
 --- !u!1 &1478104968
 GameObject:
   m_ObjectHideFlags: 0
@@ -990,6 +1011,12 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!4 &1641413753 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 583091413269648081, guid: 76b9d8179905d454e9bf6dcc847231ce,
+    type: 3}
+  m_PrefabInstance: {fileID: 152705724}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1670597319
 PrefabInstance:
   m_ObjectHideFlags: 0
