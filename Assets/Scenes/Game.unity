@@ -441,7 +441,11 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 248863974}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 463236617251174108, guid: 76b9d8179905d454e9bf6dcc847231ce,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1641413760}
   m_SourcePrefab: {fileID: 100100000, guid: 76b9d8179905d454e9bf6dcc847231ce, type: 3}
 --- !u!1 &248863969
 GameObject:
@@ -455,6 +459,7 @@ GameObject:
   - component: {fileID: 248863973}
   - component: {fileID: 248863971}
   - component: {fileID: 248863975}
+  - component: {fileID: 248863976}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -569,7 +574,8 @@ Transform:
   m_LocalPosition: {x: -0.00399971, y: 0.3490001, z: 0.011000156}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 914652644}
   m_Father: {fileID: 1837007623}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &248863975
@@ -586,6 +592,35 @@ MonoBehaviour:
   m_EditorClassIdentifier: FMODUnity::FMODUnity.StudioListener
   nonRigidbodyVelocity: 0
   attenuationObject: {fileID: 0}
+--- !u!114 &248863976
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 248863969}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ee3a39b58a4cfa419f3ddff91808852, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::hook_gun_controller
+  IM: {fileID: 0}
+  HB: {fileID: 0}
+  mainCam: {fileID: 0}
+  fire_key:
+    actionName: 
+    code: 0
+    held: 0
+    down: 0
+    released: 0
+  lerptime: 0.5
+  range: 10
+--- !u!1 &300042044 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 463236617251174108, guid: 76b9d8179905d454e9bf6dcc847231ce,
+    type: 3}
+  m_PrefabInstance: {fileID: 152705724}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &493673441
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -777,15 +812,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3add24118d157b144846cdc777ffa9f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BoatSway
-  bobHeight: 0.25
-  bobSpeed: 1
-  rollAngle: 1
-  rollSpeed: 0.8
-  pitchAngle: 1
-  pitchSpeed: 0.6
-  startLocalPos: {x: 0, y: 0, z: 0}
-  startLocalRot: {x: 0, y: 0, z: 0, w: 0}
-  seed: 0
 --- !u!1001 &895123991
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -858,6 +884,80 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 711614344}
   m_SourcePrefab: {fileID: 100100000, guid: ea0644fb9a08d5044b51e607919087f5, type: 3}
+--- !u!1001 &914652643
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 248863974}
+    m_Modifications:
+    - target: {fileID: 5191501174229072042, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: m_Name
+      value: gun_body
+      objectReference: {fileID: 0}
+    - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.44
+      objectReference: {fileID: 0}
+    - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: b86ea5e531ed33a4f856a4e09ea4b11a, type: 3}
+--- !u!4 &914652644 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+    type: 3}
+  m_PrefabInstance: {fileID: 914652643}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1290144419 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 9036149285931199850, guid: a1dcd447bfbb3bc45821f8b436c031d2,
@@ -997,6 +1097,26 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 152705724}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1641413760
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300042044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b229aeb11b8a01488c411e583be9c26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Input_Manager
+  move_keys: {x: 0, y: 0}
+  player_mouse: {x: 0, y: 0}
+  actions:
+  - actionName: fire
+    code: 323
+    held: 0
+    down: 0
+    released: 0
 --- !u!1001 &1670597319
 PrefabInstance:
   m_ObjectHideFlags: 0
