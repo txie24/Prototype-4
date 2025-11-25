@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.03.00">
+	<object class="ParameterPreset" id="{c07e7530-3f41-4e3d-b540-f4acc4a3a14c}">
+		<property name="name">
+			<value>IsSprinting</value>
+		</property>
+		<relationship name="folder">
+			<destination>{501d8cd2-4b3a-438a-8583-79fa33b22dd4}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{318fb5f4-873b-42bf-863d-5f9e71fe2d1c}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{318fb5f4-873b-42bf-863d-5f9e71fe2d1c}">
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+	</object>
+</objects>
