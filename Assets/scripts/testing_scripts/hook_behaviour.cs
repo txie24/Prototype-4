@@ -18,17 +18,6 @@ public class hook_behaviour : MonoBehaviour
         hookLine.enabled = false;
     }
 
-    void OnTriggerEnter(Collider other)
-    {
-        if(hooked_object_transform == null)
-        {
-            //Debug.Log("trying to hook object");
-            hooked_object_transform = other.transform;
-            hooked_object_transform.parent = hook_object;
-            other.attachedRigidbody.isKinematic = true;
-            rb_cache = other.attachedRigidbody;
-        }
-    }
 
     public IEnumerator Hook_Shoot(Vector3 Destination, float hook_shot_duration)
     {
