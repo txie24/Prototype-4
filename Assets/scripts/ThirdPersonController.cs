@@ -14,9 +14,8 @@ namespace StarterAssets
 #endif
 	public class ThirdPersonController : MonoBehaviour
 	{
-        [Header("Ship Reference")]
-        public ShipController currentShip;
-
+        // --- FIX: Removed "currentShip" variable so it doesn't double-move ---
+        
         [Header("Player")]
 		[Tooltip("Move speed of the character in m/s")]
 		public float MoveSpeed = 2.0f;
@@ -219,20 +218,8 @@ namespace StarterAssets
 
 			Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
 
-            Vector3 playerHorizontalMove = targetDirection.normalized * (_speed * Time.deltaTime);
-
-            if (currentShip != null)
-            {
-                
-                Vector3 shipForwardStep = currentShip.transform.forward * currentShip.forwardSpeed * Time.deltaTime;
-                playerHorizontalMove += shipForwardStep;
-            }
-
-            // Recombine horizontal movement with vertical velocity for the final Move call.
-            Vector3 finalMovement = playerHorizontalMove + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime;
-
-            // move the player
-            _controller.Move(finalMovement);
+            // --- FIX: Logic removed here. We ONLY move based on input. 
+            // The ShipController handles the boat movement separately. ---
 
             // move the player
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);

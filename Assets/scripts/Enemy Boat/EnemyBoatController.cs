@@ -1,236 +1,192 @@
 using UnityEngine;
+using System.Collections.Generic;
 
-public class EnemyBoatController : MonoBehaviour
+[RequireComponent(typeof(Rigidbody))]
+public class BoatFollower : MonoBehaviour
 {
-    public enum EnemyBoatState
+    [Header("Target Settings")]
+    public Transform playerBoat;
+    public Transform[] dockingPoints;        // Assign empty GameObjects parented to PlayerBoat here
+    public float followDistance = 10f;       // Distance to start following
+    public float dockDistance = 15f;         // Distance to trigger docking mode
+    
+    [Header("Movement Settings")]
+    public float moveSpeed = 5f;
+    public float rotationSpeed = 2f;
+    public float dockSpeed = 3f;
+    
+    // Removed fixed offset, we now use the Transform positions of dockingPoints
+    // public Vector3 dockedOffset = new Vector3(4f, 0f, 0f); 
+
+    [Header("Physics & Gravity")]
+    public float gravityForce = 20f;         // Downward force for NPCs
+    public LayerMask npcLayer;               // Layer or Logic to detect NPCs
+
+    [Header("Model Correction")]
+    // Based on your image: Red (X) is along the length, Blue (Z) is to the side.
+    // usually Forward is Z. If your Forward is negative X, we need a -90 or +90 offset.
+    // Try 90, -90, or 180 if it flies sideways.
+    public float rotationOffset = 90f; 
+
+    private Rigidbody rb;
+    private bool isDocked = false;
+    private Transform activeDockPoint; // The specific point we are currently docking to
+    private List<Rigidbody> affectedNPCs = new List<Rigidbody>();
+
+    void Start()
     {
-        Chasing,
-        Docking,
-        Docked
+        rb = GetComponent<Rigidbody>();
+        rb.useGravity = true; // The boat itself needs normal gravity
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
     }
 
-    [Header("Target (player boat)")]
-    public Transform playerBoat;      // root of player ship
-    public Transform leftDockPoint;   // side points on player ship
-    public Transform rightDockPoint;
-
-    [Header("Chase behaviour")]
-    [Tooltip("Where the enemy tries to sit relative to the player (player local space).")]
-    public Vector3 chaseOffset = new Vector3(0f, 0f, -30f);
-    public float maxChaseSpeed = 10f;
-    public float chaseTurnRateDeg = 60f;     // how fast boat can yaw while chasing
-    public float accel = 4f;
-    public float decel = 6f;
-    public float slowRadius = 10f;           // start slowing when closer than this
-    public float stopDistance = 4f;          // don't ram the exact point
-
-    [Header("Docking behaviour")]
-    [Tooltip("Start docking when within this distance of the chosen dock point.")]
-    public float startDockDistance = 20f;
-
-    [Tooltip("How far out from the side the boat lines up before sliding in.")]
-    public float dockApproachOffset = 6f;
-
-    [Tooltip("Snap + parent when closer than this to the dock point.")]
-    public float dockSnapDistance = 0.8f;
-
-    public float maxDockSpeed = 6f;
-    public float dockTurnRateDeg = 80f;
-
-    public EnemyBoatState state = EnemyBoatState.Chasing;
-
-    float currentSpeed = 0f;
-    Transform currentDockPoint;
-
-    void Update()
+    void FixedUpdate()
     {
         if (playerBoat == null) return;
 
-        switch (state)
+        float distanceToPlayer = Vector3.Distance(transform.position, playerBoat.position);
+
+        // --- STATE MACHINE ---
+        if (distanceToPlayer < dockDistance)
         {
-            case EnemyBoatState.Chasing:
-                UpdateChasing();
-                break;
-
-            case EnemyBoatState.Docking:
-                UpdateDocking();
-                break;
-
-            case EnemyBoatState.Docked:
-                // locked on, do nothing for now
-                break;
-        }
-    }
-
-    // ---------- CHASING ----------
-
-    void UpdateChasing()
-    {
-        // smooth boat-like chase: turn toward a point behind the player and move forward only
-        Vector3 chaseTarget = playerBoat.TransformPoint(chaseOffset);
-        BoatSteerTowards(chaseTarget,
-                         maxChaseSpeed,
-                         chaseTurnRateDeg,
-                         slowRadius,
-                         stopDistance);
-
-        // choose a dock point and switch to docking when we're close enough
-        Transform bestDock = GetBestDockPoint();
-        if (bestDock == null) return;
-
-        float distToDock = Vector3.Distance(transform.position, bestDock.position);
-        if (distToDock <= startDockDistance)
-        {
-            currentDockPoint = bestDock;
-            state = EnemyBoatState.Docking;
-        }
-    }
-
-    // ---------- DOCKING ----------
-
-    void UpdateDocking()
-    {
-        if (currentDockPoint == null)
-        {
-            state = EnemyBoatState.Chasing;
-            return;
-        }
-
-        // we approach from OUTSIDE the side of the ship, parallel to it,
-        // then slide inwards for the last meter.
-        Vector3 sideOut = currentDockPoint.right; // red axis should point out away from player hull
-        Vector3 approachPos = currentDockPoint.position + sideOut * dockApproachOffset;
-
-        float distToApproach = Vector3.Distance(transform.position, approachPos);
-        float distToDock = Vector3.Distance(transform.position, currentDockPoint.position);
-
-        if (distToApproach > 1.5f)
-        {
-            // phase 1: get to the approach lane, align with dockPoint forward (parallel to player)
-            BoatSteerTowards(
-                approachPos,
-                maxDockSpeed,
-                dockTurnRateDeg,
-                slowRadius: 5f,
-                stopDistance: 1.5f,
-                lockHeadingTo: currentDockPoint.forward
-            );
-        }
-        else if (distToDock > dockSnapDistance)
-        {
-            // phase 2: slide in slowly while staying parallel
-            BoatSteerTowards(
-                currentDockPoint.position,
-                maxDockSpeed * 0.6f,
-                dockTurnRateDeg,
-                slowRadius: 3f,
-                stopDistance: dockSnapDistance,
-                lockHeadingTo: currentDockPoint.forward
-            );
+            HandleDocking();
         }
         else
         {
-            // phase 3: hard dock
-            transform.position = currentDockPoint.position;
-            transform.rotation = currentDockPoint.rotation;
-            transform.SetParent(playerBoat);
-            currentSpeed = 0f;
-            state = EnemyBoatState.Docked;
+            // Reset the active dock point when we move away so we can pick a new best one later
+            activeDockPoint = null; 
+            HandleFollowing(distanceToPlayer);
+        }
+
+        // --- LOCAL GRAVITY LOGIC ---
+        ApplyLocalGravity();
+    }
+
+    void HandleFollowing(float distance)
+    {
+        isDocked = false;
+
+        // 1. Calculate direction to player
+        Vector3 directionToPlayer = (playerBoat.position - transform.position).normalized;
+
+        // 2. Move only if outside follow distance
+        if (distance > followDistance)
+        {
+            // Move forward relative to WORLD space toward target
+            // We use MovePosition for smoother physics interaction than AddForce for boats usually
+            Vector3 targetPos = Vector3.MoveTowards(transform.position, playerBoat.position, moveSpeed * Time.fixedDeltaTime);
+            rb.MovePosition(targetPos);
+        }
+
+        // 3. Rotate towards player with Compensation
+        // We ignore Y height difference for rotation so it doesn't tilt up/down weirdly
+        Vector3 lookDir = new Vector3(directionToPlayer.x, 0, directionToPlayer.z);
+        if (lookDir != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(lookDir);
+            
+            // COMPENSATION: Apply the offset to fix the model's wrong axis
+            // If your boat flies sideways, change rotationOffset in Inspector
+            targetRotation *= Quaternion.Euler(0, rotationOffset, 0);
+
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
         }
     }
 
-    // ---------- COMMON BOAT STEERING ----------
-
-    /// <summary>
-    /// Steers like a boat: rotate gradually, move only along forward, with accel/decel.
-    /// If lockHeadingTo is non-zero, the boat tries to keep that forward direction instead
-    /// of pointing directly at the target.
-    /// </summary>
-    void BoatSteerTowards(Vector3 worldTarget,
-                          float maxSpeed,
-                          float turnRateDeg,
-                          float slowRadius,
-                          float stopDistance,
-                          Vector3? lockHeadingTo = null)
+    void HandleDocking()
     {
-        float dt = Time.deltaTime;
+        isDocked = true;
 
-        // flatten target on water plane
-        Vector3 targetPos = worldTarget;
-        targetPos.y = transform.position.y;
-
-        Vector3 toTarget = targetPos - transform.position;
-        float dist = toTarget.magnitude;
-
-        // figure out desired heading
-        Vector3 desiredForward;
-        if (lockHeadingTo.HasValue)
+        // 1. Pick the best docking point if we haven't already
+        if (activeDockPoint == null)
         {
-            desiredForward = lockHeadingTo.Value.normalized;
-            desiredForward.y = 0f;
-            if (desiredForward.sqrMagnitude < 0.001f && dist > 0.001f)
-                desiredForward = toTarget.normalized;
-        }
-        else
-        {
-            if (dist < 0.001f) return;
-            desiredForward = toTarget.normalized;
+            activeDockPoint = GetClosestDockPoint();
         }
 
-        Vector3 currentForward = transform.forward;
-        currentForward.y = 0f;
+        // If no points assigned, do nothing (or fallback to old behavior if you prefer)
+        if (activeDockPoint == null) return;
 
-        // rotate towards desired heading
-        if (desiredForward.sqrMagnitude > 0.0001f && currentForward.sqrMagnitude > 0.0001f)
-        {
-            Vector3 newForward = Vector3.RotateTowards(
-                currentForward.normalized,
-                desiredForward.normalized,
-                turnRateDeg * Mathf.Deg2Rad * dt,
-                0f
-            );
-            transform.rotation = Quaternion.LookRotation(newForward, Vector3.up);
-        }
+        // 2. Smoothly move to the specific dock point position
+        Vector3 newPos = Vector3.Lerp(transform.position, activeDockPoint.position, dockSpeed * Time.fixedDeltaTime);
+        rb.MovePosition(newPos);
 
-        // choose desired speed based on distance (arrival behaviour)
-        float desiredSpeed;
-        if (dist > slowRadius)
-        {
-            desiredSpeed = maxSpeed;
-        }
-        else if (dist > stopDistance)
-        {
-            float t = Mathf.InverseLerp(stopDistance, slowRadius, dist);
-            desiredSpeed = maxSpeed * t;
-        }
-        else
-        {
-            desiredSpeed = 0f;
-        }
+        // 3. Match the Dock Point's Rotation
+        // This allows you to rotate the empty GameObject in the editor to define which way the boat faces when docked
+        Quaternion targetRotation = activeDockPoint.rotation;
+        
+        // COMPENSATION: Still need to fix the model axis even when matching rotation
+        targetRotation *= Quaternion.Euler(0, rotationOffset, 0);
 
-        // smooth speed change
-        float rate = (desiredSpeed > currentSpeed) ? accel : decel;
-        currentSpeed = Mathf.MoveTowards(currentSpeed, desiredSpeed, rate * dt);
-
-        // move forward only (no strafing)
-        transform.position += transform.forward * currentSpeed * dt;
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
     }
 
-    Transform GetBestDockPoint()
+    Transform GetClosestDockPoint()
     {
-        if (leftDockPoint == null && rightDockPoint == null) return null;
-        if (leftDockPoint != null && rightDockPoint == null) return leftDockPoint;
-        if (rightDockPoint != null && leftDockPoint == null) return rightDockPoint;
+        if (dockingPoints == null || dockingPoints.Length == 0) return null;
 
-        float leftDist = Vector3.Distance(transform.position, leftDockPoint.position);
-        float rightDist = Vector3.Distance(transform.position, rightDockPoint.position);
-        return leftDist <= rightDist ? leftDockPoint : rightDockPoint;
+        Transform bestTarget = null;
+        float closestDistanceSqr = Mathf.Infinity;
+        Vector3 currentPos = transform.position;
+
+        foreach (Transform potentialTarget in dockingPoints)
+        {
+            if (potentialTarget == null) continue;
+
+            Vector3 directionToTarget = potentialTarget.position - currentPos;
+            float dSqrToTarget = directionToTarget.sqrMagnitude;
+
+            if (dSqrToTarget < closestDistanceSqr)
+            {
+                closestDistanceSqr = dSqrToTarget;
+                bestTarget = potentialTarget;
+            }
+        }
+
+        return bestTarget;
     }
 
-    public void Undock()
+    // --- LOCAL GRAVITY SYSTEM ---
+    // This pulls NPCs down relative to the Boat's "Up", allowing them to walk on walls/decks if the boat rocks.
+    
+    void OnTriggerEnter(Collider other)
     {
-        if (state != EnemyBoatState.Docked) return;
-        transform.SetParent(null);
-        state = EnemyBoatState.Chasing;
+        if (other.CompareTag("NPC"))
+        {
+            Rigidbody npcRb = other.GetComponent<Rigidbody>();
+            if (npcRb != null && !affectedNPCs.Contains(npcRb))
+            {
+                affectedNPCs.Add(npcRb);
+                // Optional: Disable global gravity on NPC so they don't slide off due to world "down"
+                npcRb.useGravity = false; 
+            }
+        }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+        if (other.CompareTag("NPC"))
+        {
+            Rigidbody npcRb = other.GetComponent<Rigidbody>();
+            if (npcRb != null && affectedNPCs.Contains(npcRb))
+            {
+                affectedNPCs.Remove(npcRb);
+                // Re-enable global gravity when they leave the boat
+                npcRb.useGravity = true;
+            }
+        }
+    }
+
+    void ApplyLocalGravity()
+    {
+        foreach (Rigidbody npc in affectedNPCs)
+        {
+            if (npc == null) continue;
+
+            Vector3 localDown = -transform.up;
+
+            npc.AddForce(localDown * gravityForce, ForceMode.Acceleration);
+            
+
+        }
     }
 }
