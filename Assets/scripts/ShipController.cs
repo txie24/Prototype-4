@@ -3,14 +3,15 @@ using System.Collections.Generic;
 
 public class ShipController : MonoBehaviour
 {
+    // Singleton Instance
+    public static ShipController Instance;
+
     [Header("Movement Settings")]
     public float forwardSpeed = 5f;
 
     [Header("Steering Settings")]
     public float steeringSensitivity = 10f;
-    [Tooltip("How fast the wheel rotates visually (degrees per second).")]
     public float wheelRotateSpeed = 100f;
-    [Tooltip("Maximum angle the wheel can rotate visually (e.g., -90 to +90).")]
     public float maxWheelAngle = 180f;
 
     [Header("Sway Settings")]
@@ -21,10 +22,10 @@ public class ShipController : MonoBehaviour
     public float pitchAngle = 2f;
     public float pitchSpeed = 0.6f;
 
-    [Header("Gravity & Passengers")]
-    [Tooltip("Force pulling NPCs down towards the ship deck.")]
+    [Header("Collision & Passengers")]
+    [Tooltip("Layers the ship should collide with (e.g. Default). Uncheck Player/Water.")]
+    public LayerMask obstacleLayers = 1;
     public float localGravityForce = 20f;
-    public List<string> tagsToCatch = new List<string> { "Player", "NPC", "Enemy" };
 
     [Header("Player Interaction")]
     public Transform playerTransform;
@@ -34,42 +35,66 @@ public class ShipController : MonoBehaviour
     private float currentWheelRotation = 0f;
     private bool isPlayerInRange = false;
 
-    // Movement & Sway State
+    // Movement State
     Vector3 startLocalPos;
     float seed;
     float currentYaw = 0f;
 
-    // Platform Logic Variables
-    private Vector3 _lastPosition;
-    private Quaternion _lastRotation;
+    private Rigidbody rb;
+
+    // History
+    private Vector3 _prevPosition;
+    private Quaternion _prevRotation;
+
+    // Passenger Lists
     private List<CharacterController> _passengerControllers = new List<CharacterController>();
     private List<Rigidbody> _passengerRigidbodies = new List<Rigidbody>();
 
     private const KeyCode Key_TurnLeft = KeyCode.Q;
     private const KeyCode Key_TurnRight = KeyCode.E;
 
+    void Awake()
+    {
+        Instance = this;
+    }
+
     void Start()
     {
-        wheelTransform = transform.Find("StylShip_Unity/Wheel");
-        if (wheelTransform == null)
+        rb = GetComponent<Rigidbody>();
+        if (rb == null)
         {
-            Debug.LogError("Wheel transform not found");
+            Debug.LogError("ShipController: Rigidbody missing. Please add one to this object.");
+            enabled = false;
+            return;
         }
+
+        // Critical Physics Settings
+        rb.isKinematic = true;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+        rb.interpolation = RigidbodyInterpolation.Interpolate;
+
+        wheelTransform = transform.Find("StylShip_Unity/Wheel");
 
         if (playerTransform == null)
         {
             GameObject player = GameObject.FindWithTag("Player");
-            if (player != null) { playerTransform = player.transform; }
+            if (player != null) playerTransform = player.transform;
         }
 
-        // Initialize Sway Variables
+        // Auto-Register Player
+        if (playerTransform != null)
+        {
+            CharacterController cc = playerTransform.GetComponent<CharacterController>();
+            if (cc != null) AddPassenger(cc);
+        }
+
         startLocalPos = transform.localPosition;
         seed = Random.value * 10f;
         currentYaw = transform.localEulerAngles.y;
 
-        // Initialize Platform Physics tracking
-        _lastPosition = transform.position;
-        _lastRotation = transform.rotation;
+        // Init history
+        _prevPosition = rb.position;
+        _prevRotation = rb.rotation;
     }
 
     void Update()
@@ -85,124 +110,119 @@ public class ShipController : MonoBehaviour
             currentWheelRotation = Mathf.MoveTowards(currentWheelRotation, 0f, wheelRotateSpeed * Time.deltaTime);
         }
 
-        // 1. Move the Ship
-        ApplyMovementAndBob();
-        ApplyCombinedRotation();
         ApplyWheelVisualRotation();
-
-        // 2. Move Passengers (Platform Logic)
-        // We do this immediately after the ship moves to keep them synced frame-perfectly
-        MovePassengers();
-
-        // Update tracking for next frame
-        _lastPosition = transform.position;
-        _lastRotation = transform.rotation;
     }
 
     void FixedUpdate()
     {
-        // Apply Gravity in FixedUpdate for better physics stability with Rigidbodies
-        ApplyLocalGravity();
+        ApplyCombinedMovementAndRotation();
+
+        // Move passengers AFTER the ship moves to capture the exact delta
+        MovePassengers();
+
+        // Update history
+        _prevPosition = rb.position;
+        _prevRotation = rb.rotation;
     }
 
-    // --- PLATFORM & GRAVITY LOGIC ---
+    private void ApplyCombinedMovementAndRotation()
+    {
+        // 1. --- ROTATION ---
+        float t = Time.time + seed;
+        float roll = Mathf.Sin(t * rollSpeed) * rollAngle;
+        float pitch = Mathf.Cos(t * pitchSpeed) * pitchAngle;
+
+        Quaternion finalRotation = Quaternion.Euler(pitch, currentYaw, roll);
+        rb.MoveRotation(finalRotation);
+
+        // 2. --- MOVEMENT ---
+        // Use the NEW rotation to calculate forward direction, ensuring sync
+        Vector3 forwardDir = finalRotation * Vector3.forward;
+        Vector3 forwardStep = forwardDir * forwardSpeed * Time.fixedDeltaTime;
+
+        // COLLISION CHECK (Bounce/Slide Logic)
+        if (rb.SweepTest(forwardStep.normalized, out RaycastHit hit, forwardStep.magnitude + 0.1f, QueryTriggerInteraction.Ignore))
+        {
+            if (((1 << hit.collider.gameObject.layer) & obstacleLayers) != 0)
+            {
+                // Slide along the wall
+                forwardStep = Vector3.ProjectOnPlane(forwardStep, hit.normal);
+            }
+        }
+
+        // Bobbing
+        float bob = Mathf.Sin(t * bobSpeed) * bobHeight;
+        Vector3 targetLocalPos = rb.transform.localPosition;
+        targetLocalPos.y = startLocalPos.y + bob;
+
+        Vector3 bobbingOffsetWorld = transform.parent != null ? transform.parent.TransformPoint(targetLocalPos) : targetLocalPos;
+
+        // Final Target
+        Vector3 finalMoveTarget = new Vector3(rb.position.x + forwardStep.x, bobbingOffsetWorld.y, rb.position.z + forwardStep.z);
+
+        rb.MovePosition(finalMoveTarget);
+    }
 
     private void MovePassengers()
     {
-        // Calculate how much the ship moved/rotated this single frame
-        Vector3 positionDelta = transform.position - _lastPosition;
-        Quaternion rotationDelta = transform.rotation * Quaternion.Inverse(_lastRotation);
+        // Calculate the EXACT difference (Conveyor Belt)
+        Vector3 positionDelta = rb.position - _prevPosition;
+        Quaternion rotationDelta = rb.rotation * Quaternion.Inverse(_prevRotation);
 
-        // 1. Move Character Controllers (Player)
-        // CharacterControllers don't respect physics friction well, so we manually shove them
         for (int i = _passengerControllers.Count - 1; i >= 0; i--)
         {
             CharacterController cc = _passengerControllers[i];
             if (cc == null) { _passengerControllers.RemoveAt(i); continue; }
 
-            // Apply linear movement
-            Vector3 passengerMove = positionDelta;
+            // 1. Apply exact ship movement
+            Vector3 finalMove = positionDelta;
 
-            // Apply rotational movement (swinging the player if they are far from center)
-            Vector3 offsetFromCenter = cc.transform.position - transform.position;
-            Vector3 rotatedOffset = rotationDelta * offsetFromCenter;
-            passengerMove += (rotatedOffset - offsetFromCenter);
+            // 2. Apply rotation leverage (swinging)
+            Vector3 offset = cc.transform.position - rb.position;
+            Vector3 rotatedOffset = rotationDelta * offset;
+            finalMove += (rotatedOffset - offset);
 
-            // Execute Move
-            cc.Move(passengerMove);
+            // --- FIX: REMOVED GRAVITY FOR PLAYER ---
+            // The ThirdPersonController applies its own gravity. 
+            // We removed the line adding 'localGravityForce' here to allow jumping.
 
-            // Optional: Rotate the player to face with the ship? 
-            // Usually players prefer to control their own camera, so we often skip rotating their look direction.
-            // But we CAN rotate their body transform if we want them to turn with the ship:
-            // cc.transform.rotation = rotationDelta * cc.transform.rotation;
+            // Apply to Player
+            cc.Move(finalMove);
         }
 
-        // 2. Rigidbodies (NPCs / Crates) usually handle friction themselves, 
-        // but adding manual velocity helps prevent them from lagging behind.
-        foreach(var rb in _passengerRigidbodies)
-        {
-            if(rb != null && !rb.isKinematic)
-            {
-               // We rely on friction + Local Gravity for them, 
-               // but we could fudge their position here if they slide too much.
-            }
-        }
-    }
-
-    private void ApplyLocalGravity()
-    {
-        Vector3 localDown = -transform.up; // Down relative to the ship deck
-
+        // Move Rigidbodies (Crates/Enemies) - They DO need gravity help
         for (int i = _passengerRigidbodies.Count - 1; i >= 0; i--)
         {
-            Rigidbody rb = _passengerRigidbodies[i];
-            if (rb == null) { _passengerRigidbodies.RemoveAt(i); continue; }
+            Rigidbody pRb = _passengerRigidbodies[i];
+            if (pRb == null) { _passengerRigidbodies.RemoveAt(i); continue; }
 
-            // Pull them towards the floor of the ship
-            rb.AddForce(localDown * localGravityForce, ForceMode.Acceleration);
+            pRb.AddForce(-transform.up * localGravityForce, ForceMode.Acceleration);
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    // --- HELPER METHODS ---
+    public void AddPassenger(CharacterController cc)
     {
-        if (tagsToCatch.Contains(other.tag))
-        {
-            CharacterController cc = other.GetComponent<CharacterController>();
-            if (cc != null && !_passengerControllers.Contains(cc))
-            {
-                _passengerControllers.Add(cc);
-            }
-
-            Rigidbody rb = other.GetComponent<Rigidbody>();
-            if (rb != null && !_passengerRigidbodies.Contains(rb))
-            {
-                _passengerRigidbodies.Add(rb);
-                rb.useGravity = false; // Disable world gravity so they don't fight us
-            }
-        }
+        if (cc != null && !_passengerControllers.Contains(cc))
+            _passengerControllers.Add(cc);
     }
 
-    private void OnTriggerExit(Collider other)
+    public void RemovePassenger(CharacterController cc)
     {
-        if (tagsToCatch.Contains(other.tag))
-        {
-            CharacterController cc = other.GetComponent<CharacterController>();
-            if (cc != null && _passengerControllers.Contains(cc))
-            {
-                _passengerControllers.Remove(cc);
-            }
+        if (cc != null && _passengerControllers.Contains(cc))
+            _passengerControllers.Remove(cc);
+    }
 
-            Rigidbody rb = other.GetComponent<Rigidbody>();
-            if (rb != null && _passengerRigidbodies.Contains(rb))
-            {
-                _passengerRigidbodies.Remove(rb);
-                rb.useGravity = true; // Restore world gravity
-            }
+    public void AddPassengerRigidbody(Rigidbody rb)
+    {
+        if (rb != null && !_passengerRigidbodies.Contains(rb))
+        {
+            _passengerRigidbodies.Add(rb);
+            rb.useGravity = false;
         }
     }
 
-    // --- EXISTING SHIP LOGIC ---
-
+    // --- INPUT LOGIC ---
     private void CheckPlayerDistance()
     {
         if (playerTransform != null && wheelTransform != null)
@@ -210,56 +230,23 @@ public class ShipController : MonoBehaviour
             Vector3 wheelPos = wheelTransform.position;
             Vector3 wheelPosFlat = new Vector3(wheelPos.x, 0, wheelPos.z);
             Vector3 playerPosFlat = new Vector3(playerTransform.position.x, 0, playerTransform.position.z);
-            float distance = Vector3.Distance(wheelPosFlat, playerPosFlat);
-            isPlayerInRange = distance <= interactionDistance;
-        }
-        else
-        {
-            isPlayerInRange = true;
+            isPlayerInRange = Vector3.Distance(wheelPosFlat, playerPosFlat) <= interactionDistance;
         }
     }
 
     private void HandleSteeringInput()
     {
         float turnInput = 0f;
-
         if (Input.GetKey(Key_TurnLeft)) turnInput = -1f;
         else if (Input.GetKey(Key_TurnRight)) turnInput = 1f;
 
         float wheelTargetRotation = currentWheelRotation + (turnInput * wheelRotateSpeed * Time.deltaTime);
         currentWheelRotation = Mathf.Clamp(wheelTargetRotation, -maxWheelAngle, maxWheelAngle);
 
-        if (turnInput == 0f)
-        {
-            currentWheelRotation = Mathf.MoveTowards(currentWheelRotation, 0f, wheelRotateSpeed * Time.deltaTime * 0.5f);
-        }
+        if (turnInput == 0f) currentWheelRotation = Mathf.MoveTowards(currentWheelRotation, 0f, wheelRotateSpeed * Time.deltaTime * 0.5f);
 
         float normalizedSteering = currentWheelRotation / maxWheelAngle;
-        float yawAmount = normalizedSteering * steeringSensitivity * Time.deltaTime;
-        currentYaw += yawAmount;
-    }
-
-    private void ApplyMovementAndBob()
-    {
-        Vector3 forwardStep = transform.forward * forwardSpeed * Time.deltaTime;
-        transform.position += forwardStep;
-
-        float t = Time.time + seed;
-        float bob = Mathf.Sin(t * bobSpeed) * bobHeight;
-
-        Vector3 newLocalPos = transform.localPosition;
-        newLocalPos.y = startLocalPos.y + bob;
-        transform.localPosition = newLocalPos;
-    }
-
-    private void ApplyCombinedRotation()
-    {
-        float t = Time.time + seed;
-        float roll = Mathf.Sin(t * rollSpeed) * rollAngle;
-        float pitch = Mathf.Cos(t * pitchSpeed) * pitchAngle;
-
-        Quaternion finalRotation = Quaternion.Euler(pitch, currentYaw, roll);
-        transform.localRotation = finalRotation;
+        currentYaw += normalizedSteering * steeringSensitivity * Time.deltaTime;
     }
 
     private void ApplyWheelVisualRotation()
