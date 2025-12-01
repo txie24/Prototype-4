@@ -266,7 +266,7 @@ public class ShipController : MonoBehaviour
     {
         if (wheelTransform != null)
         {
-            wheelTransform.localRotation = Quaternion.AngleAxis(currentWheelRotation, Vector3.forward);
+            wheelTransform.localRotation = Quaternion.AngleAxis(-currentWheelRotation, Vector3.forward);
         }
     }
 }

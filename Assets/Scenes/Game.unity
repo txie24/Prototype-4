@@ -164,6 +164,31 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: -8.096
       objectReference: {fileID: 0}
+    - target: {fileID: 2713613745514744496, guid: a1dcd447bfbb3bc45821f8b436c031d2,
+        type: 3}
+      propertyPath: m_Convex
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2713613745514744496, guid: a1dcd447bfbb3bc45821f8b436c031d2,
+        type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3520280827853628638, guid: a1dcd447bfbb3bc45821f8b436c031d2,
+        type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6143835787200001067, guid: a1dcd447bfbb3bc45821f8b436c031d2,
+        type: 3}
+      propertyPath: m_Convex
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6143835787200001067, guid: a1dcd447bfbb3bc45821f8b436c031d2,
+        type: 3}
+      propertyPath: m_IsTrigger
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7004620429888358522, guid: a1dcd447bfbb3bc45821f8b436c031d2,
         type: 3}
       propertyPath: m_LocalRotation.w
@@ -3878,10 +3903,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a1812819f011e24e92c1fbaa979cc14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShipController
-  forwardSpeed: 2
+  forwardSpeed: 10
   steeringSensitivity: 10
   wheelRotateSpeed: 100
-  maxWheelAngle: 180
+  maxWheelAngle: 360
   bobHeight: 0.25
   bobSpeed: 1
   rollAngle: 5
@@ -3891,6 +3916,7 @@ MonoBehaviour:
   localGravityForce: 20
   tagsToCatch:
   - Player
+  - NPC
   - Enemy
   playerTransform: {fileID: 1641413753}
   interactionDistance: 1.5
@@ -4186,6 +4212,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Enabled
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8012807470710336450, guid: 10038933d2c22814dbaff12551a38547,
+        type: 3}
+      propertyPath: m_Convex
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8012807470710336450, guid: 10038933d2c22814dbaff12551a38547,
+        type: 3}
+      propertyPath: m_ProvidesContacts
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
