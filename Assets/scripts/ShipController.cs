@@ -22,9 +22,14 @@ public class ShipController : MonoBehaviour
     public float pitchAngle = 2f;
     public float pitchSpeed = 0.6f;
 
-    [Header("Collision & Passengers")]
+    [Header("Collision & Health")]
     [Tooltip("Layers the ship should collide with (e.g. Default). Uncheck Player/Water.")]
     public LayerMask obstacleLayers = 1;
+    [Tooltip("Drag the ShipHealth script here.")]
+    public ShipHealth shipHealth;
+    public float damageInterval = 1.0f; // How often to take damage (in seconds)
+
+    [Header("Passengers")]
     public float localGravityForce = 20f;
 
     [Header("Player Interaction")]
@@ -41,6 +46,9 @@ public class ShipController : MonoBehaviour
     float currentYaw = 0f;
 
     private Rigidbody rb;
+
+    // Damage Timer
+    private float _nextDamageTime = 0f;
 
     // History
     private Vector3 _prevPosition;
@@ -68,10 +76,7 @@ public class ShipController : MonoBehaviour
             return;
         }
 
-        // Critical Physics Settings
         rb.isKinematic = true;
-        // FIX: Switch to Discrete/None because we are moving in Update() manually.
-        // This prevents the physics engine from interpolating "against" our manual movement.
         rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
         rb.interpolation = RigidbodyInterpolation.None;
 
@@ -83,7 +88,11 @@ public class ShipController : MonoBehaviour
             if (player != null) playerTransform = player.transform;
         }
 
-        // Auto-Register Player
+        if (shipHealth == null)
+        {
+            shipHealth = GetComponent<ShipHealth>();
+        }
+
         if (playerTransform != null)
         {
             CharacterController cc = playerTransform.GetComponent<CharacterController>();
@@ -99,7 +108,6 @@ public class ShipController : MonoBehaviour
         _prevRotation = rb.rotation;
     }
 
-    // FIX: All logic moved to Update to sync with Camera/Player loop and stop jitter
     void Update()
     {
         CheckPlayerDistance();
@@ -114,21 +122,19 @@ public class ShipController : MonoBehaviour
         }
 
         ApplyWheelVisualRotation();
-
-        // 1. Move Ship (Visual Frame)
+    
         ApplyCombinedMovementAndRotation();
 
-        // 2. Move Passengers (Visual Frame)
+        // Move passengers AFTER the ship moves to capture the exact delta
         MovePassengers();
 
-        // 3. Update History
+        // Update history
         _prevPosition = rb.position;
         _prevRotation = rb.rotation;
     }
 
     private void ApplyCombinedMovementAndRotation()
     {
-        // --- ROTATION ---
         float t = Time.time + seed;
         float roll = Mathf.Sin(t * rollSpeed) * rollAngle;
         float pitch = Mathf.Cos(t * pitchSpeed) * pitchAngle;
@@ -136,15 +142,26 @@ public class ShipController : MonoBehaviour
         Quaternion finalRotation = Quaternion.Euler(pitch, currentYaw, roll);
         rb.MoveRotation(finalRotation);
 
-        // --- MOVEMENT ---
-        // Use Time.deltaTime because we are in Update
+        // Movement
         Vector3 forwardStep = transform.forward * forwardSpeed * Time.deltaTime;
 
-        // COLLISION CHECK (Bounce/Slide Logic)
+        // Collision and damage check
         if (rb.SweepTest(forwardStep.normalized, out RaycastHit hit, forwardStep.magnitude + 0.1f, QueryTriggerInteraction.Ignore))
         {
             if (((1 << hit.collider.gameObject.layer) & obstacleLayers) != 0)
             {
+                if (shipHealth != null && Time.time >= _nextDamageTime)
+                {
+                    // Deal 30% of MAX health as damage
+                    float damageAmount = shipHealth.maxHealth * 0.30f;
+                    shipHealth.TakeDamage(damageAmount);
+
+                    // Reset timer
+                    _nextDamageTime = Time.time + damageInterval;
+
+                    Debug.Log($"Ship hit iceberg! Took {damageAmount} damage.");
+                }
+
                 // Slide along the wall
                 forwardStep = Vector3.ProjectOnPlane(forwardStep, hit.normal);
             }
@@ -165,7 +182,6 @@ public class ShipController : MonoBehaviour
 
     private void MovePassengers()
     {
-        // Calculate Delta
         Vector3 positionDelta = rb.position - _prevPosition;
         Quaternion rotationDelta = rb.rotation * Quaternion.Inverse(_prevRotation);
 
@@ -174,15 +190,13 @@ public class ShipController : MonoBehaviour
             CharacterController cc = _passengerControllers[i];
             if (cc == null) { _passengerControllers.RemoveAt(i); continue; }
 
-            // 1. Apply exact ship movement
             Vector3 finalMove = positionDelta;
 
-            // 2. Apply rotation leverage (swinging)
+            // Rotation leverage
             Vector3 offset = cc.transform.position - rb.position;
             Vector3 rotatedOffset = rotationDelta * offset;
             finalMove += (rotatedOffset - offset);
 
-            // Apply to Player (No gravity added here to allow jumping)
             cc.Move(finalMove);
         }
 
@@ -196,7 +210,6 @@ public class ShipController : MonoBehaviour
         }
     }
 
-    // --- HELPER METHODS ---
     public void AddPassenger(CharacterController cc)
     {
         if (cc != null && !_passengerControllers.Contains(cc))
@@ -218,7 +231,6 @@ public class ShipController : MonoBehaviour
         }
     }
 
-    // --- INPUT LOGIC ---
     private void CheckPlayerDistance()
     {
         if (playerTransform != null && wheelTransform != null)

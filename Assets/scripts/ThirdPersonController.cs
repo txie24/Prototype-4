@@ -177,13 +177,9 @@ namespace StarterAssets
             // if there is no input, set the target speed to 0
             if (_input.move == Vector2.zero) targetSpeed = 0.0f;
 
-            // --- FIX START ---
-            // OLD LINE: float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
-
-            // NEW LINE: Use internal speed state. 
+            
             // This prevents the script from reading the Ship's speed as the Player's speed.
             float currentHorizontalSpeed = _speed;
-            // --- FIX END ---
 
             float speedOffset = 0.1f;
             float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
