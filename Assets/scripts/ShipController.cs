@@ -70,8 +70,10 @@ public class ShipController : MonoBehaviour
 
         // Critical Physics Settings
         rb.isKinematic = true;
-        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
-        rb.interpolation = RigidbodyInterpolation.Interpolate;
+        // FIX: Switch to Discrete/None because we are moving in Update() manually.
+        // This prevents the physics engine from interpolating "against" our manual movement.
+        rb.collisionDetectionMode = CollisionDetectionMode.Discrete;
+        rb.interpolation = RigidbodyInterpolation.None;
 
         wheelTransform = transform.Find("StylShip_Unity/Wheel");
 
@@ -97,6 +99,7 @@ public class ShipController : MonoBehaviour
         _prevRotation = rb.rotation;
     }
 
+    // FIX: All logic moved to Update to sync with Camera/Player loop and stop jitter
     void Update()
     {
         CheckPlayerDistance();
@@ -111,23 +114,21 @@ public class ShipController : MonoBehaviour
         }
 
         ApplyWheelVisualRotation();
-    }
 
-    void FixedUpdate()
-    {
+        // 1. Move Ship (Visual Frame)
         ApplyCombinedMovementAndRotation();
 
-        // Move passengers AFTER the ship moves to capture the exact delta
+        // 2. Move Passengers (Visual Frame)
         MovePassengers();
 
-        // Update history
+        // 3. Update History
         _prevPosition = rb.position;
         _prevRotation = rb.rotation;
     }
 
     private void ApplyCombinedMovementAndRotation()
     {
-        // 1. --- ROTATION ---
+        // --- ROTATION ---
         float t = Time.time + seed;
         float roll = Mathf.Sin(t * rollSpeed) * rollAngle;
         float pitch = Mathf.Cos(t * pitchSpeed) * pitchAngle;
@@ -135,10 +136,9 @@ public class ShipController : MonoBehaviour
         Quaternion finalRotation = Quaternion.Euler(pitch, currentYaw, roll);
         rb.MoveRotation(finalRotation);
 
-        // 2. --- MOVEMENT ---
-        // Use the NEW rotation to calculate forward direction, ensuring sync
-        Vector3 forwardDir = finalRotation * Vector3.forward;
-        Vector3 forwardStep = forwardDir * forwardSpeed * Time.fixedDeltaTime;
+        // --- MOVEMENT ---
+        // Use Time.deltaTime because we are in Update
+        Vector3 forwardStep = transform.forward * forwardSpeed * Time.deltaTime;
 
         // COLLISION CHECK (Bounce/Slide Logic)
         if (rb.SweepTest(forwardStep.normalized, out RaycastHit hit, forwardStep.magnitude + 0.1f, QueryTriggerInteraction.Ignore))
@@ -165,7 +165,7 @@ public class ShipController : MonoBehaviour
 
     private void MovePassengers()
     {
-        // Calculate the EXACT difference (Conveyor Belt)
+        // Calculate Delta
         Vector3 positionDelta = rb.position - _prevPosition;
         Quaternion rotationDelta = rb.rotation * Quaternion.Inverse(_prevRotation);
 
@@ -182,21 +182,17 @@ public class ShipController : MonoBehaviour
             Vector3 rotatedOffset = rotationDelta * offset;
             finalMove += (rotatedOffset - offset);
 
-            // --- FIX: REMOVED GRAVITY FOR PLAYER ---
-            // The ThirdPersonController applies its own gravity. 
-            // We removed the line adding 'localGravityForce' here to allow jumping.
-
-            // Apply to Player
+            // Apply to Player (No gravity added here to allow jumping)
             cc.Move(finalMove);
         }
 
-        // Move Rigidbodies (Crates/Enemies) - They DO need gravity help
+        // Move Rigidbodies
         for (int i = _passengerRigidbodies.Count - 1; i >= 0; i--)
         {
             Rigidbody pRb = _passengerRigidbodies[i];
             if (pRb == null) { _passengerRigidbodies.RemoveAt(i); continue; }
 
-            pRb.AddForce(-transform.up * localGravityForce, ForceMode.Acceleration);
+            pRb.AddForce(-transform.up * localGravityForce * Time.deltaTime, ForceMode.VelocityChange);
         }
     }
 
