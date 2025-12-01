@@ -49,6 +49,11 @@ public class ShipHealth : MonoBehaviour
 
     private void Die()
     {
+        AudioSource[] allAudio = FindObjectsByType<AudioSource>(FindObjectsSortMode.None);
+        foreach (AudioSource audio in allAudio)
+        {
+            audio.Stop();
+        }
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
         SceneManager.LoadScene("GameOver");
