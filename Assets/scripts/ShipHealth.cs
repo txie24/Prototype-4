@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class ShipHealth : MonoBehaviour
 {
@@ -48,8 +49,8 @@ public class ShipHealth : MonoBehaviour
 
     private void Die()
     {
-        Debug.Log("The Ship has sunk!");
-        // Add game over logic or sinking animation here
-        enabled = false; // Disable health logic
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+        SceneManager.LoadScene("GameOver");
     }
 }
