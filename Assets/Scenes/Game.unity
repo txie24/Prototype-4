@@ -3769,6 +3769,62 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 914652643}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1013989869
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1013989871}
+  - component: {fileID: 1013989870}
+  m_Layer: 0
+  m_Name: EnviornmentManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1013989870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1013989869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 254209e8ba4c9dc4e9463fffec546448, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IcebergSpawner
+  icebergPrefabs:
+  - {fileID: 2602975220198116835, guid: 10038933d2c22814dbaff12551a38547, type: 3}
+  - {fileID: 8280039493998787043, guid: 9269ea0b3480d424ea90072161e59db8, type: 3}
+  playerTransform: {fileID: 1641413753}
+  icebergCount: 20
+  oceanLevelY: 0
+  initialMinDistance: 250
+  initialMaxDistance: 800
+  respawnMinDistance: 1000
+  respawnMaxDistance: 1500
+  spawnOppositeSide: 1
+  despawnDistance: 2000
+--- !u!4 &1013989871
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1013989869}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -5.17172, y: 0, z: -5.18628}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!198 &1039290171 stripped
 ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 19892908, guid: 9339c7b6471e74be0a821bdb9d1fa110,
@@ -5233,74 +5289,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 65936163}
   m_PrefabAsset: {fileID: 0}
---- !u!1001 &1977733301
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 7162602615161990867, guid: 520381c93e2f9734bab9f23f83618de2,
-        type: 3}
-      propertyPath: m_Name
-      value: Iceberg1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7162602615162024691, guid: 520381c93e2f9734bab9f23f83618de2,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: -21.193945
-      objectReference: {fileID: 0}
-    - target: {fileID: 7162602615162024691, guid: 520381c93e2f9734bab9f23f83618de2,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7162602615162024691, guid: 520381c93e2f9734bab9f23f83618de2,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 75.37671
-      objectReference: {fileID: 0}
-    - target: {fileID: 7162602615162024691, guid: 520381c93e2f9734bab9f23f83618de2,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 7162602615162024691, guid: 520381c93e2f9734bab9f23f83618de2,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7162602615162024691, guid: 520381c93e2f9734bab9f23f83618de2,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7162602615162024691, guid: 520381c93e2f9734bab9f23f83618de2,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7162602615162024691, guid: 520381c93e2f9734bab9f23f83618de2,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7162602615162024691, guid: 520381c93e2f9734bab9f23f83618de2,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7162602615162024691, guid: 520381c93e2f9734bab9f23f83618de2,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 520381c93e2f9734bab9f23f83618de2, type: 3}
 --- !u!1001 &1993030251
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5760,6 +5748,6 @@ SceneRoots:
   - {fileID: 8028426939556686466}
   - {fileID: 424654876}
   - {fileID: 1223431543}
-  - {fileID: 1977733301}
   - {fileID: 555434845}
   - {fileID: 1893114946}
+  - {fileID: 1013989871}
