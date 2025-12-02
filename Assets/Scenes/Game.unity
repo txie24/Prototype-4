@@ -3833,14 +3833,14 @@ MonoBehaviour:
   - {fileID: 2602975220198116835, guid: 2acb46b5f21d7714ca9ac66ad4064382, type: 3}
   - {fileID: 8280039493998787043, guid: 9269ea0b3480d424ea90072161e59db8, type: 3}
   playerTransform: {fileID: 1641413753}
-  icebergCount: 30
+  icebergCount: 40
   oceanLevelY: 0
   initialMinDistance: 250
-  initialMaxDistance: 700
-  respawnMinDistance: 700
-  respawnMaxDistance: 900
+  initialMaxDistance: 500
+  respawnMinDistance: 350
+  respawnMaxDistance: 650
   spawnOppositeSide: 1
-  despawnDistance: 1000
+  despawnDistance: 700
 --- !u!4 &1013989871
 Transform:
   m_ObjectHideFlags: 0
@@ -4697,7 +4697,7 @@ Transform:
   m_GameObject: {fileID: 1479511206}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 1.38}
+  m_LocalPosition: {x: 0, y: 1, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
