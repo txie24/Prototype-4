@@ -25,6 +25,13 @@ public class PlayerCombat : MonoBehaviour
     public float attackRate = 1f;
     private float nextAttackTime = 0f;
 
+    void Start()
+    {
+        // Grab the Animator from the Player object
+        // Commented out since no animation yet
+        //_animator = GetComponent<Animator>();
+    }
+
     void Update()
     {
         if (Time.time >= nextAttackTime)
