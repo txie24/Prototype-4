@@ -4650,7 +4650,7 @@ MonoBehaviour:
   player_mouse: {x: 0, y: 0}
   actions:
   - actionName: fire
-    code: 323
+    code: 324
     held: 0
     down: 0
     released: 0
