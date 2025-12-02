@@ -10,6 +10,10 @@ public class hook_behaviour : MonoBehaviour
     [SerializeField] private LineRenderer hookLine;
     [SerializeField] private Transform return_point;
 
+    [Header("Gameplay")]
+    public float healAmount = 20f;
+    public float destroyDelay = 0.5f;
+
     public Rigidbody rb_cache;
     public bool isLerping = false;
 
@@ -59,8 +63,26 @@ public class hook_behaviour : MonoBehaviour
         hook_object.position = return_point.position;
         hookLine.enabled = false;
 
-        
-        
+        // Only if something hooked heal
+        if (hooked_object_transform != null)
+        {
+            if (ShipController.Instance != null)
+            {
+                ShipHealth health = ShipController.Instance.GetComponent<ShipHealth>();
+                if (health != null)
+                {
+                    health.Heal(healAmount);
+                    Debug.Log("Item retrieved! Ship repaired.");
+                }
+            }
+
+            hooked_object_transform.parent = null;
+
+            Destroy(hooked_object_transform.gameObject, destroyDelay);
+
+            hooked_object_transform = null;
+        }
+
         yield return null;
     }
 }

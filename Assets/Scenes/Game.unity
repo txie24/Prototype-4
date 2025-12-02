@@ -3244,7 +3244,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: faf48ced2e924e44884e8864e9f6172d, type: 2}
+  - {fileID: 2100000, guid: c4e7c5e69b6769641a2de7cfbd153544, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -3723,6 +3723,11 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 9
       objectReference: {fileID: 0}
+    - target: {fileID: 8482971507751699104, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: healAmount
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -3822,14 +3827,14 @@ MonoBehaviour:
   - {fileID: 2602975220198116835, guid: 2acb46b5f21d7714ca9ac66ad4064382, type: 3}
   - {fileID: 8280039493998787043, guid: 9269ea0b3480d424ea90072161e59db8, type: 3}
   playerTransform: {fileID: 1641413753}
-  icebergCount: 20
+  icebergCount: 30
   oceanLevelY: 0
   initialMinDistance: 250
-  initialMaxDistance: 800
-  respawnMinDistance: 1000
-  respawnMaxDistance: 1500
+  initialMaxDistance: 700
+  respawnMinDistance: 700
+  respawnMaxDistance: 900
   spawnOppositeSide: 1
-  despawnDistance: 2000
+  despawnDistance: 1000
 --- !u!4 &1013989871
 Transform:
   m_ObjectHideFlags: 0
@@ -4750,6 +4755,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   attackPoint: {fileID: 1479511207}
+  attackAnimTrigger: Attack
   attackRate: 1
 --- !u!1001 &1670597319
 PrefabInstance:
