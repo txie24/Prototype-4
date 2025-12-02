@@ -56,6 +56,7 @@ public class ShipHealth : MonoBehaviour
         }
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
+        Buttons.FinalSurvivalTime = Time.timeSinceLevelLoad;
         SceneManager.LoadScene("GameOver");
     }
 }
