@@ -2497,6 +2497,7 @@ GameObject:
   - component: {fileID: 4454377469925169858}
   - component: {fileID: 5519160849033405754}
   - component: {fileID: 6629690196259588051}
+  - component: {fileID: 5079046567584813059}
   m_Layer: 7
   m_Name: Pirate_03
   m_TagString: NPC
@@ -2702,6 +2703,21 @@ MonoBehaviour:
     m_Bits: 4294967295
   groundSnapDistance: 2
   footHeight: 0.05
+--- !u!114 &5079046567584813059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7420622418663699120}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e6858b15a5a5a04ea03ec8cc019af04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyHealth
+  maxHealth: 100
+  currentHealth: 0
+  destroyDelay: 0
 --- !u!1 &7646187541363736074
 GameObject:
   m_ObjectHideFlags: 0
