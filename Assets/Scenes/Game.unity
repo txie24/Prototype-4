@@ -3875,6 +3875,7 @@ MonoBehaviour:
   spawnRadiusMin: 60
   spawnRadiusMax: 150
   maxEnemies: 10
+  boatLifetime: 30
   playerShipPivot: {fileID: 1882185075}
   dockLeft: {fileID: 461456731}
   dockRight: {fileID: 232530327}
@@ -4779,7 +4780,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9ef9f8542faff248b7a09634b4c308c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerCombat
-  attackRadius: 0.5
+  attackRadius: 1
   attackDamage: 100
   enemyLayers:
     serializedVersion: 2
