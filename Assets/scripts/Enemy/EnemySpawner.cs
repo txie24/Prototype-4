@@ -13,23 +13,17 @@ public class EnemySpawner : MonoBehaviour
     public float spawnRadiusMin = 30f;
     public float spawnRadiusMax = 60f;
     public int maxEnemies = 5;
-    [Tooltip("How long (seconds) before the boat sinks/destroys itself to make room for new ones.")]
     public float boatLifetime = 30f;
 
     [Header("Global References (Scene Objects)")]
-    [Tooltip("The pivot of the player's ship. Auto-detected if null.")]
     public Transform playerShipPivot;
 
-    [Tooltip("Drag the Left Docking Point (GameObject) from the Player Ship here.")]
     public Transform dockLeft;
-    [Tooltip("Drag the Right Docking Point (GameObject) from the Player Ship here.")]
     public Transform dockRight;
 
     [Header("Pirate Destinations")]
-    [Tooltip("The 'Climb End' point on the deck.")]
     public Transform climbEndPoint;
 
-    [Tooltip("The 'Small Stairs' transform (used for Slash Points and Walk Target).")]
     public Transform targetStairs;
 
     private float _timer;
@@ -68,16 +62,15 @@ public class EnemySpawner : MonoBehaviour
 
     void SpawnEnemyUnit()
     {
-        // 1. Calculate Position
+        // Calculate Position
         Vector2 randomDir = Random.insideUnitCircle.normalized;
         Vector3 spawnOffset = new Vector3(randomDir.x, 0, randomDir.y) * Random.Range(spawnRadiusMin, spawnRadiusMax);
         Vector3 spawnPos = playerShipPivot.position + spawnOffset;
         spawnPos.y = 0;
 
-        // 2. Spawn the Boat
+        // Spawn the Boat
         GameObject newBoat = Instantiate(woodBoatPrefab, spawnPos, Quaternion.LookRotation(-spawnOffset));
 
-        // --- AUTO-DESTROY BOAT ---
         // This clears the boat after 30s, allowing the list count to drop so new enemies can spawn.
         Destroy(newBoat, boatLifetime);
 
@@ -91,17 +84,14 @@ public class EnemySpawner : MonoBehaviour
             boatScript.dockingPoints = new Transform[] { dockLeft, dockRight };
         }
 
-        // 3. Spawn the Pirate
+        // Spawn the Pirate
         Vector3 piratePos = spawnPos + Vector3.up * 0.5f;
         GameObject newPirate = Instantiate(piratePrefab, piratePos, Quaternion.LookRotation(-spawnOffset));
 
-        // 4. --- INJECT MISSING REFERENCES INTO PIRATE ---
 
-        // A. Boarding Controller
         EnemyBoardingController boardingCtrl = newPirate.GetComponent<EnemyBoardingController>();
         if (boardingCtrl != null)
         {
-            // FIX: Get the COMPONENT from the boat, not just the transform
             boardingCtrl.enemyBoat = newBoat.GetComponent<BoatFollower>();
             boardingCtrl.climbEndOnDeck = climbEndPoint;
         }
@@ -110,21 +100,18 @@ public class EnemySpawner : MonoBehaviour
         EnemyBoardingAttack attackCtrl = newPirate.GetComponent<EnemyBoardingAttack>();
         if (attackCtrl != null)
         {
-            // FIX: Get the ShipHealth COMPONENT from the player ship pivot
             attackCtrl.targetShip = playerShipPivot.GetComponent<ShipHealth>();
 
-            // FIX: Wrap the single stair transform in a new Array
             attackCtrl.slashPoints = new Transform[] { targetStairs };
         }
 
-        // C. Deck Walker
         EnemyDeckWalker walkerCtrl = newPirate.GetComponent<EnemyDeckWalker>();
         if (walkerCtrl != null)
         {
             walkerCtrl.walkTarget = targetStairs;
         }
 
-        // 5. Setup Parent Constraint (Sticking to boat)
+        // Setup Parent Constraint (Sticking to boat)
         SetupPirateConstraint(newPirate, newBoat.transform);
 
         // Track them
@@ -139,13 +126,11 @@ public class EnemySpawner : MonoBehaviour
 
         List<ConstraintSource> sources = new List<ConstraintSource>();
 
-        // Boat Source (Active)
         ConstraintSource boatSource = new ConstraintSource();
         boatSource.sourceTransform = boatTransform;
         boatSource.weight = 1.0f;
         sources.Add(boatSource);
 
-        // Ship Source (Inactive)
         ConstraintSource shipSource = new ConstraintSource();
         shipSource.sourceTransform = playerShipPivot;
         shipSource.weight = 0.0f;
