@@ -26,10 +26,15 @@ public class BoatFollower : MonoBehaviour
     // Based on your image: Red (X) is along the length, Blue (Z) is to the side.
     // usually Forward is Z. If your Forward is negative X, we need a -90 or +90 offset.
     // Try 90, -90, or 180 if it flies sideways.
+    [Header("Docking State")]
+    public float fullyDockedDistance = 3f;   // how close to dock point counts as "fully docked"
+
     public float rotationOffset = 90f; 
 
     private Rigidbody rb;
     private bool isDocked = false;
+    public bool IsDocked => isDocked;
+
     private Transform activeDockPoint; // The specific point we are currently docking to
     private List<Rigidbody> affectedNPCs = new List<Rigidbody>();
 
@@ -189,4 +194,23 @@ public class BoatFollower : MonoBehaviour
 
         }
     }
+        // helper for npc boarding
+    // "fully docked" = in docking mode, close to the dock point, and basically stopped
+// true only when this boat is actually snapped near its dock point
+    public bool IsFullyDocked
+    {
+        get
+        {
+            if (!isDocked) return false;
+            if (activeDockPoint == null) return false;
+
+            // how close this boat is to the chosen dock point
+            float dist = Vector3.Distance(transform.position, activeDockPoint.position);
+
+            // be generous so it actually triggers
+            return dist <= fullyDockedDistance;
+        }
+    }
+
+
 }
