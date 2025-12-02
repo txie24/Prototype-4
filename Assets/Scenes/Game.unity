@@ -3614,6 +3614,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1179759868583278190, guid: ea0644fb9a08d5044b51e607919087f5,
         type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1179759868583278190, guid: ea0644fb9a08d5044b51e607919087f5,
+        type: 3}
       propertyPath: m_IsTrigger
       value: 0
       objectReference: {fileID: 0}
@@ -3804,6 +3809,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1013989871}
   - component: {fileID: 1013989870}
+  - component: {fileID: 1013989872}
   m_Layer: 0
   m_Name: EnviornmentManager
   m_TagString: Untagged
@@ -3850,6 +3856,30 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1013989872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1013989869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9d7921065e1fd4bb4c03c01e3fec3c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
+  woodBoatPrefab: {fileID: 711614343}
+  piratePrefab: {fileID: 7420622418663699120, guid: 20981c1a3947bfa44b8ccb9d10d61f62,
+    type: 3}
+  spawnInterval: 5
+  spawnRadiusMin: 60
+  spawnRadiusMax: 150
+  maxEnemies: 10
+  playerShipPivot: {fileID: 1882185075}
+  dockLeft: {fileID: 461456731}
+  dockRight: {fileID: 232530327}
+  climbEndPoint: {fileID: 313960160}
+  targetStairs: {fileID: 1974216743}
 --- !u!198 &1039290171 stripped
 ParticleSystem:
   m_CorrespondingSourceObject: {fileID: 19892908, guid: 9339c7b6471e74be0a821bdb9d1fa110,
