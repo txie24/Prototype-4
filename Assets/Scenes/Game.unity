@@ -2872,6 +2872,12 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!4 &401765500 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5284166615100649114, guid: 64bd14ac020b56d4abb677e5791db699,
+    type: 3}
+  m_PrefabInstance: {fileID: 1362818362}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &405394511
 GameObject:
   m_ObjectHideFlags: 0
@@ -3098,6 +3104,12 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &425366441 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 617415662176101035, guid: 20981c1a3947bfa44b8ccb9d10d61f62,
+    type: 3}
+  m_PrefabInstance: {fileID: 8028426939556686466}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &461456730
 GameObject:
   m_ObjectHideFlags: 0
@@ -4254,7 +4266,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 635, y: 453}
+  m_AnchoredPosition: {x: 1000, y: 320}
   m_SizeDelta: {x: 160, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1294424829
@@ -4421,6 +4433,74 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1322576420}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1001 &1362818362
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 425366441}
+    m_Modifications:
+    - target: {fileID: 4764510604297581600, guid: 64bd14ac020b56d4abb677e5791db699,
+        type: 3}
+      propertyPath: m_Name
+      value: Pirate_Sword
+      objectReference: {fileID: 0}
+    - target: {fileID: 5284166615100649114, guid: 64bd14ac020b56d4abb677e5791db699,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.1269
+      objectReference: {fileID: 0}
+    - target: {fileID: 5284166615100649114, guid: 64bd14ac020b56d4abb677e5791db699,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -0.0478
+      objectReference: {fileID: 0}
+    - target: {fileID: 5284166615100649114, guid: 64bd14ac020b56d4abb677e5791db699,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.0299
+      objectReference: {fileID: 0}
+    - target: {fileID: 5284166615100649114, guid: 64bd14ac020b56d4abb677e5791db699,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.165566
+      objectReference: {fileID: 0}
+    - target: {fileID: 5284166615100649114, guid: 64bd14ac020b56d4abb677e5791db699,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.20676318
+      objectReference: {fileID: 0}
+    - target: {fileID: 5284166615100649114, guid: 64bd14ac020b56d4abb677e5791db699,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0.72371805
+      objectReference: {fileID: 0}
+    - target: {fileID: 5284166615100649114, guid: 64bd14ac020b56d4abb677e5791db699,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0.63723564
+      objectReference: {fileID: 0}
+    - target: {fileID: 5284166615100649114, guid: 64bd14ac020b56d4abb677e5791db699,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -58.638
+      objectReference: {fileID: 0}
+    - target: {fileID: 5284166615100649114, guid: 64bd14ac020b56d4abb677e5791db699,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -255.19
+      objectReference: {fileID: 0}
+    - target: {fileID: 5284166615100649114, guid: 64bd14ac020b56d4abb677e5791db699,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 78.657
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 64bd14ac020b56d4abb677e5791db699, type: 3}
 --- !u!1 &1478104968
 GameObject:
   m_ObjectHideFlags: 0
@@ -5727,11 +5807,15 @@ PrefabInstance:
     - target: {fileID: 7420622418663699120, guid: 20981c1a3947bfa44b8ccb9d10d61f62,
         type: 3}
       propertyPath: m_Name
-      value: Pirate_03
+      value: Pirate
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 617415662176101035, guid: 20981c1a3947bfa44b8ccb9d10d61f62,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 401765500}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 20981c1a3947bfa44b8ccb9d10d61f62, type: 3}
 --- !u!1660057539 &9223372036854775807
