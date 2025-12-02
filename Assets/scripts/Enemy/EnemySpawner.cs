@@ -22,9 +22,7 @@ public class EnemySpawner : MonoBehaviour
     public Transform dockRight;
 
     [Header("Pirate Destinations")]
-    public Transform climbEndPoint;
-
-    public Transform targetStairs;
+    public Transform climbEndPoint;   // where they climb onto deck
 
     private float _timer;
     private List<GameObject> _activeEnemies = new List<GameObject>();
@@ -46,7 +44,7 @@ public class EnemySpawner : MonoBehaviour
     {
         if (playerShipPivot == null) return;
 
-        // Cleanup destroyed enemies from list (This handles the Destroy(boat) logic automatically)
+        // Cleanup destroyed enemies from list (Destroy(boat) will set them null)
         _activeEnemies.RemoveAll(item => item == null);
 
         if (_activeEnemies.Count < maxEnemies)
@@ -62,7 +60,7 @@ public class EnemySpawner : MonoBehaviour
 
     void SpawnEnemyUnit()
     {
-        // Calculate Position
+        // Calculate Position around player ship
         Vector2 randomDir = Random.insideUnitCircle.normalized;
         Vector3 spawnOffset = new Vector3(randomDir.x, 0, randomDir.y) * Random.Range(spawnRadiusMin, spawnRadiusMax);
         Vector3 spawnPos = playerShipPivot.position + spawnOffset;
@@ -71,16 +69,16 @@ public class EnemySpawner : MonoBehaviour
         // Spawn the Boat
         GameObject newBoat = Instantiate(woodBoatPrefab, spawnPos, Quaternion.LookRotation(-spawnOffset));
 
-        // This clears the boat after 30s, allowing the list count to drop so new enemies can spawn.
+        // This clears the boat after boatLifetime, allowing list count to drop
         Destroy(newBoat, boatLifetime);
 
-        // Fix Boat References
+        // BoatFollower setup
         BoatFollower boatScript = newBoat.GetComponent<BoatFollower>();
         if (boatScript != null)
         {
             boatScript.playerBoat = playerShipPivot;
 
-            // Pass the Left and Right dock points to the boat's array
+            // Pass the dock points to the boat's array
             boatScript.dockingPoints = new Transform[] { dockLeft, dockRight };
         }
 
@@ -88,7 +86,7 @@ public class EnemySpawner : MonoBehaviour
         Vector3 piratePos = spawnPos + Vector3.up * 0.5f;
         GameObject newPirate = Instantiate(piratePrefab, piratePos, Quaternion.LookRotation(-spawnOffset));
 
-
+        // A. Boarding controller setup
         EnemyBoardingController boardingCtrl = newPirate.GetComponent<EnemyBoardingController>();
         if (boardingCtrl != null)
         {
@@ -100,21 +98,23 @@ public class EnemySpawner : MonoBehaviour
         EnemyBoardingAttack attackCtrl = newPirate.GetComponent<EnemyBoardingAttack>();
         if (attackCtrl != null)
         {
-            attackCtrl.targetShip = playerShipPivot.GetComponent<ShipHealth>();
-
-            attackCtrl.slashPoints = new Transform[] { targetStairs };
+            // only set targetShip; slashPoints come from prefab/inspector
+            ShipHealth shipHealth = playerShipPivot.GetComponent<ShipHealth>();
+            if (shipHealth != null)
+                attackCtrl.targetShip = shipHealth;
         }
 
+        // C. Deck Walker
         EnemyDeckWalker walkerCtrl = newPirate.GetComponent<EnemyDeckWalker>();
         if (walkerCtrl != null)
         {
-            walkerCtrl.walkTarget = targetStairs;
+            // nothing to assign here; it will pick a random slashPoint itself in BeginWalk()
         }
 
         // Setup Parent Constraint (Sticking to boat)
         SetupPirateConstraint(newPirate, newBoat.transform);
 
-        // Track them
+        // Track boat so we can limit active count
         _activeEnemies.Add(newBoat);
     }
 
