@@ -14,108 +14,159 @@ public class EnemyDeckWalker : MonoBehaviour
     [Header("attack")]
     public EnemyBoardingAttack attack;
 
-    [Header("ground + upright")]
-    public LayerMask groundMask = ~0;     // what counts as ground (Default etc)
-    public float groundCheckDistance = 0.3f;
-    public float groundCheckRadius = 0.25f;
-    public float uprightLerpSpeed = 12f;
-
-    public bool IsGrounded { get; private set; }
+    [Header("ground snapping")]
+    public LayerMask groundMask = ~0;          // layers considered as deck/ground
+    public float groundSnapDistance = 2f;      // max distance to search downwards
+    public float footHeight = 0.05f;           // small offset above deck
 
     Rigidbody rb;
+    Collider col;
     bool walking;
+    bool atTarget;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        col = GetComponent<Collider>();
+
+        if (rb != null)
+        {
+            // we handle vertical + upright ourselves
+            rb.useGravity = false;
+
+            // prevent tipping over: only allow yaw
+            rb.freezeRotation = false;
+            rb.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        }
     }
 
     public void BeginWalk()
     {
         walking = true;
+        atTarget = false;
+
+        if (rb != null)
+        {
+            // make sure position isn't frozen from a previous state
+            rb.constraints &= ~(RigidbodyConstraints.FreezePositionX |
+                                RigidbodyConstraints.FreezePositionY |
+                                RigidbodyConstraints.FreezePositionZ);
+        }
     }
 
     void FixedUpdate()
     {
         Vector3 up = transform.parent != null ? transform.parent.up : Vector3.up;
 
-        // --- ground check ---
-        Vector3 checkOrigin = transform.position + up * 0.1f;
-        float rayLength = groundCheckDistance + 0.1f;
-        IsGrounded = Physics.SphereCast(
-            checkOrigin,
-            groundCheckRadius,
-            -up,
-            out _,
-            rayLength,
-            groundMask,
-            QueryTriggerInteraction.Ignore
-        );
-
-        // --- movement towards target ---
-        Vector3 moveDir = Vector3.zero;
-
-        if (walking && walkTarget != null && IsGrounded)
+        if (!walking || walkTarget == null)
         {
-            Vector3 toTarget = walkTarget.position - transform.position;
+            KeepUpright(up);
+            return;
+        }
 
-            // flatten onto deck plane (so we don't walk "up" into the air)
-            Vector3 toTargetFlat = Vector3.ProjectOnPlane(toTarget, up);
-            float dist = toTargetFlat.magnitude;
+        // direction to target, flattened on deck plane
+        Vector3 toTarget = walkTarget.position - transform.position;
+        Vector3 flat = Vector3.ProjectOnPlane(toTarget, up);
+        float dist = flat.magnitude;
 
-            if (dist <= stopDistance)
+        if (dist <= stopDistance)
+        {
+            // === ARRIVED AT ATTACK LOCATION ===
+            walking = false;
+            atTarget = true;
+
+            Vector3 pos = transform.position;
+            SnapToGround(ref pos, up);
+
+            if (rb != null)
             {
-                walking = false;
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+                rb.MovePosition(pos);
 
-                if (animator && !string.IsNullOrEmpty(speedParam))
-                    animator.SetFloat(speedParam, 0f);
-
-                if (attack != null)
-                    attack.BeginAttack();
+                // completely freeze at attack spot
+                rb.constraints |= RigidbodyConstraints.FreezePositionX |
+                                  RigidbodyConstraints.FreezePositionY |
+                                  RigidbodyConstraints.FreezePositionZ |
+                                  RigidbodyConstraints.FreezeRotationX |
+                                  RigidbodyConstraints.FreezeRotationY |
+                                  RigidbodyConstraints.FreezeRotationZ;
             }
             else
             {
-                moveDir = toTargetFlat.normalized;
-
-                Vector3 newPos = rb != null
-                    ? rb.position + moveDir * moveSpeed * Time.fixedDeltaTime
-                    : transform.position + moveDir * moveSpeed * Time.fixedDeltaTime;
-
-                if (rb != null)
-                    rb.MovePosition(newPos);
-                else
-                    transform.position = newPos;
+                transform.position = pos;
             }
+
+            if (animator && !string.IsNullOrEmpty(speedParam))
+                animator.SetFloat(speedParam, 0f);
+
+            if (attack != null)
+                attack.BeginAttack();
+
+            return;
         }
 
-        // --- rotation: keep upright + face move direction if there is one ---
-        Vector3 desiredForward;
+        Vector3 dir = flat.normalized;
 
-        if (moveDir.sqrMagnitude > 0.0001f)
-        {
-            desiredForward = moveDir;
-        }
-        else
-        {
-            // no movement? just keep whatever forward we have, but flattened on the deck
-            desiredForward = Vector3.ProjectOnPlane(transform.forward, up);
-            if (desiredForward.sqrMagnitude < 0.0001f)
-                desiredForward = Vector3.ProjectOnPlane(Vector3.forward, up);
-        }
-
-        desiredForward.Normalize();
-        Quaternion targetRot = Quaternion.LookRotation(desiredForward, up);
+        // move towards target
+        Vector3 newPos = transform.position + dir * moveSpeed * Time.fixedDeltaTime;
+        SnapToGround(ref newPos, up);   // stick feet to deck
 
         if (rb != null)
-            rb.MoveRotation(Quaternion.Slerp(rb.rotation, targetRot, uprightLerpSpeed * Time.fixedDeltaTime));
+            rb.MovePosition(newPos);
         else
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, uprightLerpSpeed * Time.deltaTime);
+            transform.position = newPos;
 
-        // --- anim speed ---
+        // rotate to face movement direction, upright
+        Quaternion lookRot = Quaternion.LookRotation(dir, up);
+
+        if (rb != null)
+            rb.MoveRotation(Quaternion.Slerp(rb.rotation, lookRot, 10f * Time.fixedDeltaTime));
+        else
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, 10f * Time.deltaTime);
+
         if (animator && !string.IsNullOrEmpty(speedParam))
+            animator.SetFloat(speedParam, moveSpeed);
+    }
+
+    void KeepUpright(Vector3 up)
+    {
+        // keep forward flattened on deck
+        Vector3 fwd = Vector3.ProjectOnPlane(transform.forward, up);
+        if (fwd.sqrMagnitude < 0.0001f)
+            fwd = Vector3.ProjectOnPlane(Vector3.forward, up);
+
+        Quaternion uprightRot = Quaternion.LookRotation(fwd.normalized, up);
+
+        if (rb != null)
+            rb.MoveRotation(Quaternion.Slerp(rb.rotation, uprightRot, 10f * Time.fixedDeltaTime));
+        else
+            transform.rotation = Quaternion.Slerp(transform.rotation, uprightRot, 10f * Time.deltaTime);
+    }
+
+    void SnapToGround(ref Vector3 position, Vector3 up)
+    {
+        // cast down, but skip hits on our own collider
+        Vector3 origin = position + up * 1f;
+        float remaining = groundSnapDistance;
+        RaycastHit hit;
+
+        while (remaining > 0f &&
+               Physics.Raycast(origin, -up, out hit, remaining, groundMask, QueryTriggerInteraction.Ignore))
         {
-            float animSpeed = (walking && IsGrounded) ? moveSpeed : 0f;
-            animator.SetFloat(speedParam, animSpeed);
+            if (hit.collider != null &&
+                hit.collider != col &&
+                !hit.collider.transform.IsChildOf(transform))
+            {
+                // this is real ground
+                position = hit.point + up * footHeight;
+                return;
+            }
+
+            // we hit ourselves or a child – move origin past that and keep going
+            float travelled = hit.distance + 0.01f;
+            origin = hit.point - up * 0.01f;
+            remaining -= travelled;
         }
     }
 }

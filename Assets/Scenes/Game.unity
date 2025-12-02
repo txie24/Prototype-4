@@ -2524,6 +2524,12 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!95 &252224921 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5765577306158305185, guid: c48ccd4514b92c8458f9a430ebfa94d5,
+    type: 3}
+  m_PrefabInstance: {fileID: 493673441}
+  m_PrefabAsset: {fileID: 0}
 --- !u!136 &252224923
 CapsuleCollider:
   m_ObjectHideFlags: 0
@@ -2605,15 +2611,14 @@ MonoBehaviour:
   walkTarget: {fileID: 1974216743}
   moveSpeed: 2
   stopDistance: 0.5
-  animator: {fileID: 0}
+  animator: {fileID: 252224921}
   speedParam: Speed
   attack: {fileID: 252224927}
   groundMask:
     serializedVersion: 2
-    m_Bits: 1
-  groundCheckDistance: 0.3
-  groundCheckRadius: 0.25
-  uprightLerpSpeed: 12
+    m_Bits: 4294967295
+  groundSnapDistance: 2
+  footHeight: 0.05
 --- !u!114 &252224927
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2632,7 +2637,7 @@ MonoBehaviour:
   maxDelay: 1.5
   slashPoints:
   - {fileID: 1974216743}
-  animator: {fileID: 0}
+  animator: {fileID: 252224921}
   attackTriggerName: Slash
 --- !u!114 &252224928
 MonoBehaviour:
@@ -4136,7 +4141,7 @@ PrefabInstance:
     - target: {fileID: 1179759868583278190, guid: ea0644fb9a08d5044b51e607919087f5,
         type: 3}
       propertyPath: m_Convex
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1179759868583278190, guid: ea0644fb9a08d5044b51e607919087f5,
         type: 3}
