@@ -37,7 +37,7 @@ public class Loot_Spawner_Behaviour : MonoBehaviour
             Map.SetPixel(xCoord, yCoord, Color.white);
         }
         Map.Apply();
-        transform.GetComponent<Renderer>().material.mainTexture = Map;
+        //transform.GetComponent<Renderer>().material.mainTexture = Map;
         Map_Data_Cache = Map;
     }
     
