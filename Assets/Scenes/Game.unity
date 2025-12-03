@@ -5470,7 +5470,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7f7348668035c624382c101f4f5c0cf7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShipHealth
-  maxHealth: 100
+  maxHealth: 200
   currentHealth: 0
   healthBar: {fileID: 1294424829}
 --- !u!1 &1893114945
@@ -6155,6 +6155,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1425232247041931798, guid: 4fae7b4c30edf4963b179e5469ae2f09,
+        type: 3}
+      propertyPath: stopDistance
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 5652694144898602551, guid: 4fae7b4c30edf4963b179e5469ae2f09,
         type: 3}
       propertyPath: m_Sources.Array.data[0].sourceTransform

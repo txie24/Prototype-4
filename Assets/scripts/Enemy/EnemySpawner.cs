@@ -36,7 +36,7 @@ public class EnemySpawner : MonoBehaviour
 
         if (dockLeft == null || dockRight == null)
         {
-            Debug.LogWarning("EnemySpawner: Please assign Dock Left and Dock Right in the Inspector!");
+            Debug.LogWarning("EnemySpawner: please assign dockLeft and dockRight in the inspector.");
         }
     }
 
@@ -44,7 +44,7 @@ public class EnemySpawner : MonoBehaviour
     {
         if (playerShipPivot == null) return;
 
-        // Cleanup destroyed enemies from list (Destroy(boat) will set them null)
+        // cleanup destroyed boats from list
         _activeEnemies.RemoveAll(item => item == null);
 
         if (_activeEnemies.Count < maxEnemies)
@@ -60,33 +60,51 @@ public class EnemySpawner : MonoBehaviour
 
     void SpawnEnemyUnit()
     {
-        // Calculate Position around player ship
+        // safety: don't even try if prefabs are missing or destroyed
+        if (woodBoatPrefab == null)
+        {
+            Debug.LogWarning("EnemySpawner: woodBoatPrefab is missing or was destroyed. drag a prefab into this field, not a scene object.");
+            return;
+        }
+
+        if (piratePrefab == null)
+        {
+            Debug.LogWarning("EnemySpawner: piratePrefab is missing or was destroyed. drag a prefab into this field, not a scene object.");
+            return;
+        }
+
+        // position around player ship
         Vector2 randomDir = Random.insideUnitCircle.normalized;
-        Vector3 spawnOffset = new Vector3(randomDir.x, 0, randomDir.y) * Random.Range(spawnRadiusMin, spawnRadiusMax);
+        if (randomDir.sqrMagnitude < 0.001f) randomDir = Vector2.right;
+
+        float radius = Random.Range(spawnRadiusMin, spawnRadiusMax);
+        Vector3 spawnOffset = new Vector3(randomDir.x, 0, randomDir.y) * radius;
         Vector3 spawnPos = playerShipPivot.position + spawnOffset;
         spawnPos.y = 0;
 
-        // Spawn the Boat
-        GameObject newBoat = Instantiate(woodBoatPrefab, spawnPos, Quaternion.LookRotation(-spawnOffset));
+        // small boat faces toward the ship
+        Quaternion boatRot = Quaternion.LookRotation(-spawnOffset, Vector3.up);
 
-        // This clears the boat after boatLifetime, allowing list count to drop
-        Destroy(newBoat, boatLifetime);
+        // boat
+        GameObject newBoat = Instantiate(woodBoatPrefab, spawnPos, boatRot);
 
-        // BoatFollower setup
+        // auto cleanup boat after lifetime (extra safety)
+        if (boatLifetime > 0f)
+            Destroy(newBoat, boatLifetime);
+
+        // boat follower setup
         BoatFollower boatScript = newBoat.GetComponent<BoatFollower>();
         if (boatScript != null)
         {
             boatScript.playerBoat = playerShipPivot;
-
-            // Pass the dock points to the boat's array
             boatScript.dockingPoints = new Transform[] { dockLeft, dockRight };
         }
 
-        // Spawn the Pirate
+        // pirate
         Vector3 piratePos = spawnPos + Vector3.up * 0.5f;
-        GameObject newPirate = Instantiate(piratePrefab, piratePos, Quaternion.LookRotation(-spawnOffset));
+        GameObject newPirate = Instantiate(piratePrefab, piratePos, boatRot);
 
-        // A. Boarding controller setup
+        // boarding controller
         EnemyBoardingController boardingCtrl = newPirate.GetComponent<EnemyBoardingController>();
         if (boardingCtrl != null)
         {
@@ -94,53 +112,62 @@ public class EnemySpawner : MonoBehaviour
             boardingCtrl.climbEndOnDeck = climbEndPoint;
         }
 
-        // B. Boarding Attack
+        // attack
         EnemyBoardingAttack attackCtrl = newPirate.GetComponent<EnemyBoardingAttack>();
         if (attackCtrl != null)
         {
-            // only set targetShip; slashPoints come from prefab/inspector
+            // we still try to set it here, but the attack script will also auto-find if this is null
             ShipHealth shipHealth = playerShipPivot.GetComponent<ShipHealth>();
             if (shipHealth != null)
                 attackCtrl.targetShip = shipHealth;
         }
 
-        // C. Deck Walker
+        // deck walker (nothing extra needed)
         EnemyDeckWalker walkerCtrl = newPirate.GetComponent<EnemyDeckWalker>();
         if (walkerCtrl != null)
         {
-            // nothing to assign here; it will pick a random slashPoint itself in BeginWalk()
+            // it will choose a slash point in BeginWalk()
         }
 
-        // Setup Parent Constraint (Sticking to boat)
+        // constraint so pirate sticks to boat, then later switches to ship
         SetupPirateConstraint(newPirate, newBoat.transform);
 
-        // Track boat so we can limit active count
+        // track the boat so we limit concurrent boats
         _activeEnemies.Add(newBoat);
     }
 
     void SetupPirateConstraint(GameObject pirate, Transform boatTransform)
     {
         ParentConstraint constraint = pirate.GetComponent<ParentConstraint>();
-
         if (constraint == null) constraint = pirate.AddComponent<ParentConstraint>();
 
         List<ConstraintSource> sources = new List<ConstraintSource>();
 
+        // source 0 = small boat
         ConstraintSource boatSource = new ConstraintSource();
         boatSource.sourceTransform = boatTransform;
         boatSource.weight = 1.0f;
         sources.Add(boatSource);
 
-        ConstraintSource shipSource = new ConstraintSource();
-        shipSource.sourceTransform = playerShipPivot;
-        shipSource.weight = 0.0f;
-        sources.Add(shipSource);
+        // source 1 = player ship pivot (weight 0, controller will switch later)
+        if (playerShipPivot != null)
+        {
+            ConstraintSource shipSource = new ConstraintSource();
+            shipSource.sourceTransform = playerShipPivot;
+            shipSource.weight = 0.0f;
+            sources.Add(shipSource);
+        }
 
         constraint.SetSources(sources);
         constraint.rotationAxis = Axis.X | Axis.Y | Axis.Z;
         constraint.translationAxis = Axis.X | Axis.Y | Axis.Z;
-        constraint.SetTranslationOffset(0, Vector3.zero);
-        constraint.SetRotationOffset(0, Vector3.zero);
+
+        for (int i = 0; i < constraint.sourceCount; i++)
+        {
+            constraint.SetTranslationOffset(i, Vector3.zero);
+            constraint.SetRotationOffset(i, Vector3.zero);
+        }
+
         constraint.constraintActive = true;
     }
 }
