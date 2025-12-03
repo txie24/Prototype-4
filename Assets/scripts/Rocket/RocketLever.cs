@@ -4,9 +4,9 @@ using System.Collections;
 public class RocketLever : MonoBehaviour
 {
     [Header("Lever movement")]
-    public Transform leverRoot;          // pivot that rotates (the parent of your cubes)
-    public float offAngle = -20f;        // angle when lever is "off"
-    public float onAngle  =  20f;        // angle when lever is "on"
+    public Transform leverRoot;
+    public float offAngle = -20f;
+    public float onAngle = 20f;
     public float moveTime = 0.15f;
 
     [Header("Interaction")]
@@ -14,12 +14,13 @@ public class RocketLever : MonoBehaviour
     public string playerTag = "Player";
 
     [Header("Rocket boosters")]
-    public BoosterPivot leftBooster;     // left rocket arm
-    public BoosterPivot rightBooster;    // right rocket arm
+    public BoosterPivot leftBooster;
+    public BoosterPivot rightBooster;
 
-    public bool IsPlayerInRange { get; private set; }  // UI can read this
+    public bool isOn = false;
 
-    bool isOn = false;
+    public bool IsPlayerInRange { get; private set; }
+
     bool isMoving = false;
     Coroutine moveRoutine;
 
@@ -51,7 +52,7 @@ public class RocketLever : MonoBehaviour
         }
     }
 
-    void ToggleLever()
+    public void ToggleLever()
     {
         if (isMoving || leverRoot == null) return;
 
@@ -61,11 +62,18 @@ public class RocketLever : MonoBehaviour
             StopCoroutine(moveRoutine);
         moveRoutine = StartCoroutine(AnimateLever(isOn));
 
-        // toggle both boosters
         if (leftBooster != null)
             leftBooster.ToggleBooster();
         if (rightBooster != null)
             rightBooster.ToggleBooster();
+    }
+
+    public void ForceOff()
+    {
+        if (isOn && !isMoving)
+        {
+            ToggleLever();
+        }
     }
 
     IEnumerator AnimateLever(bool turnOn)
@@ -85,7 +93,7 @@ public class RocketLever : MonoBehaviour
 
             float angle = Mathf.Lerp(start, target, k);
             Vector3 e = leverRoot.localEulerAngles;
-            e.x = angle;                       // change to y/z if needed
+            e.x = angle;
             leverRoot.localEulerAngles = e;
 
             yield return null;
@@ -98,7 +106,7 @@ public class RocketLever : MonoBehaviour
     void SetLeverAngle(float angle)
     {
         Vector3 e = leverRoot.localEulerAngles;
-        e.x = angle;                           // same axis as above
+        e.x = angle;
         leverRoot.localEulerAngles = e;
     }
 }

@@ -7,11 +7,12 @@ public class Loot_Spawner_Behaviour : MonoBehaviour
     public Texture2D Map_Data_Cache;
     public float scale = 1;
     public int cell_count = 10;
+    public int seed = 200;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         PG = transform.GetComponent<pool_generic>();
-        Random.InitState(200);
+        Random.InitState(seed);
         GenerateLootMap(50);
         GenerateLoot(Map_Data_Cache);
     }
