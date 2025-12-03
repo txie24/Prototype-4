@@ -4151,7 +4151,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IcebergSpawner
   icebergPrefabs:
   - {fileID: 2602975220198116835, guid: 2acb46b5f21d7714ca9ac66ad4064382, type: 3}
-  - {fileID: 8280039493998787043, guid: 9269ea0b3480d424ea90072161e59db8, type: 3}
+  - {fileID: 8280039493998787043, guid: 10038933d2c22814dbaff12551a38547, type: 3}
   playerTransform: {fileID: 1641413753}
   icebergCount: 40
   oceanLevelY: 0
@@ -4194,7 +4194,7 @@ MonoBehaviour:
   spawnRadiusMin: 60
   spawnRadiusMax: 150
   maxEnemies: 10
-  boatLifetime: 30
+  boatLifetime: 10
   playerShipPivot: {fileID: 1882185075}
   dockLeft: {fileID: 461456731}
   dockRight: {fileID: 232530327}
@@ -6175,6 +6175,11 @@ PrefabInstance:
       propertyPath: climbEndOnDeck
       value: 
       objectReference: {fileID: 313960160}
+    - target: {fileID: 5930565897786318844, guid: 4fae7b4c30edf4963b179e5469ae2f09,
+        type: 3}
+      propertyPath: climbHeightOffset
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6616995310059159389, guid: 4fae7b4c30edf4963b179e5469ae2f09,
         type: 3}
       propertyPath: m_Controller
