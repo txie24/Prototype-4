@@ -9,6 +9,10 @@ public class EnemyHealth : MonoBehaviour
     [Header("Death Settings")]
     public float destroyDelay = 0f;
 
+    [Header("boarding")]
+    [Tooltip("if true, and this enemy has an EnemyBoardingController, its wooden boat is destroyed when this enemy dies so the spawner can make a new wave")]
+    public bool destroyBoatOnDeath = true;
+
     void Start()
     {
         currentHealth = maxHealth;
@@ -17,7 +21,6 @@ public class EnemyHealth : MonoBehaviour
     public void TakeDamage(float amount)
     {
         currentHealth -= amount;
-        // Debug.Log($"{name} took {amount} damage. Current HP: {currentHealth}");
 
         if (currentHealth <= 0)
         {
@@ -29,12 +32,22 @@ public class EnemyHealth : MonoBehaviour
     {
         Debug.Log($"{name} died!");
 
+        // if this is a boarding pirate, kill its boat so the spawner can spawn again
+        if (destroyBoatOnDeath)
+        {
+            var boarding = GetComponent<EnemyBoardingController>();
+            if (boarding != null && boarding.enemyBoat != null)
+            {
+                Destroy(boarding.enemyBoat.gameObject);
+            }
+        }
+
         Collider col = GetComponent<Collider>();
         if (col != null) col.enabled = false;
 
-        // Disable the enemy AI script here (not sure which one it is tinyu)
+        // disable ai scripts here if you have any
 
-        // Remove from the world
+        // remove from the world
         Destroy(gameObject, destroyDelay);
     }
 }

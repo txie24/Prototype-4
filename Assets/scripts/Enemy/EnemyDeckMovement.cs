@@ -23,6 +23,7 @@ public class EnemyDeckWalker : MonoBehaviour
 
     Transform currentTarget;             // chosen slash point
     bool walking;
+    bool lockedIn;                       // true once we've reached the attack spot
 
     void Awake()
     {
@@ -40,6 +41,8 @@ public class EnemyDeckWalker : MonoBehaviour
     // called by EnemyBoardingController after climbing onto the ship
     public void BeginWalk()
     {
+        lockedIn = false;
+
         if (attack == null || attack.slashPoints == null || attack.slashPoints.Length == 0)
         {
             Debug.LogWarning("EnemyDeckWalker.BeginWalk: no slash points set on EnemyBoardingAttack.");
@@ -60,6 +63,17 @@ public class EnemyDeckWalker : MonoBehaviour
         SnapToGround(ref pos, up);
         transform.position = pos;
 
+        // once we are locked in, never try to move again – just keep the body upright
+        if (lockedIn)
+        {
+            KeepUpright(up);
+
+            if (animator && !string.IsNullOrEmpty(speedParam))
+                animator.SetFloat(speedParam, 0f);
+
+            return;
+        }
+
         if (!walking || currentTarget == null)
         {
             KeepUpright(up);
@@ -75,8 +89,14 @@ public class EnemyDeckWalker : MonoBehaviour
 
         if (dist <= stopDistance)
         {
-            // reached attack position
+            // reached attack position: snap, lock, and tell the attack script to start hitting the ship
             walking = false;
+            lockedIn = true;
+
+            // small snap in case we stopped just short of the slash point
+            Vector3 lockPos = currentTarget.position;
+            SnapToGround(ref lockPos, up);
+            transform.position = lockPos;
 
             KeepUpright(up);
 
