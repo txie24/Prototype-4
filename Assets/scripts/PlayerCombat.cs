@@ -14,7 +14,6 @@ public class PlayerCombat : MonoBehaviour
     public LayerMask enemyLayers;
 
     [Header("References")]
-    [Tooltip("Optional: Assign an empty GameObject in front of the player as the attack center. If empty, uses Player position.")]
     public Transform attackPoint;
 
     [Header("Animation")]
@@ -25,12 +24,6 @@ public class PlayerCombat : MonoBehaviour
     public float attackRate = 1f;
     private float nextAttackTime = 0f;
 
-    void Start()
-    {
-        // Grab the Animator from the Player object
-        // Commented out since no animation yet
-        //_animator = GetComponent<Animator>();
-    }
 
     void Update()
     {
@@ -59,10 +52,10 @@ public class PlayerCombat : MonoBehaviour
     void Attack()
     {
         // Shell for what the animation code would look like
-        //if (_animator != null)
-        //{
-        //    _animator.SetTrigger(attackAnimTrigger);
-        //}
+        if (_animator != null)
+        {
+            _animator.SetTrigger(attackAnimTrigger);
+        }
 
         // Determine where the attack circle is
         Vector3 origin = attackPoint == null ? transform.position + transform.forward : attackPoint.position;

@@ -105,7 +105,6 @@ public class EnemyBoardingController : MonoBehaviour
         else if (ShipController.Instance != null)
         {
             Rigidbody myRb = GetComponent<Rigidbody>();
-            if (myRb != null) ShipController.Instance.AddPassengerRigidbody(myRb);
         }
         if (deckWalker != null)
             deckWalker.BeginWalk();
