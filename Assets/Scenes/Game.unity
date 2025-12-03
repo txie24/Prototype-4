@@ -5655,7 +5655,7 @@ MonoBehaviour:
   - {fileID: 232530327}
   followDistance: 10
   dockDistance: 12
-  moveSpeed: 15
+  moveSpeed: 7.5
   rotationSpeed: 2
   dockSpeed: 3
   gravityForce: 20
@@ -6843,7 +6843,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
   woodBoatPrefab: {fileID: 2670057908128473233}
   piratePrefab: {fileID: 1681948055380599272}
-  spawnInterval: 5
+  spawnInterval: 10
   spawnRadiusMin: 60
   spawnRadiusMax: 150
   maxEnemies: 10
