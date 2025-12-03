@@ -139,46 +139,58 @@ public class ShipController : MonoBehaviour
         float roll = Mathf.Sin(t * rollSpeed) * rollAngle;
         float pitch = Mathf.Cos(t * pitchSpeed) * pitchAngle;
 
+        // apply roll/pitch/yaw
         Quaternion finalRotation = Quaternion.Euler(pitch, currentYaw, roll);
         rb.MoveRotation(finalRotation);
 
-        // Movement
+        // forward movement this frame
         Vector3 forwardStep = transform.forward * forwardSpeed * Time.deltaTime;
 
-        // Collision and damage check
-        if (rb.SweepTest(forwardStep.normalized, out RaycastHit hit, forwardStep.magnitude + 0.1f, QueryTriggerInteraction.Ignore))
+        // ----- collision + damage check (Raycast instead of SweepTest) -----
+        RaycastHit hit;
+        Vector3 origin = rb.position;                                // start from ship position
+        float maxDistance = forwardStep.magnitude + 0.1f;
+
+        if (Physics.Raycast(origin, forwardStep.normalized, out hit, maxDistance, ~0, QueryTriggerInteraction.Ignore))
         {
+            // only treat it as an obstacle if it's on one of the obstacleLayers
             if (((1 << hit.collider.gameObject.layer) & obstacleLayers) != 0)
             {
                 if (shipHealth != null && Time.time >= _nextDamageTime)
                 {
-                    // Deal 30% of MAX health as damage
+                    // 30% of max health
                     float damageAmount = shipHealth.maxHealth * 0.30f;
                     shipHealth.TakeDamage(damageAmount);
 
-                    // Reset timer
                     _nextDamageTime = Time.time + damageInterval;
-
                     Debug.Log($"Ship hit iceberg! Took {damageAmount} damage.");
                 }
 
-                // Slide along the wall
+                // slide along surface instead of sticking
                 forwardStep = Vector3.ProjectOnPlane(forwardStep, hit.normal);
             }
         }
 
-        // Bobbing
+        // ----- bobbing -----
         float bob = Mathf.Sin(t * bobSpeed) * bobHeight;
         Vector3 targetLocalPos = rb.transform.localPosition;
         targetLocalPos.y = startLocalPos.y + bob;
 
-        Vector3 bobbingOffsetWorld = transform.parent != null ? transform.parent.TransformPoint(targetLocalPos) : targetLocalPos;
+        Vector3 bobbingOffsetWorld =
+            transform.parent != null
+                ? transform.parent.TransformPoint(targetLocalPos)
+                : targetLocalPos;
 
-        // Final Target
-        Vector3 finalMoveTarget = new Vector3(rb.position.x + forwardStep.x, bobbingOffsetWorld.y, rb.position.z + forwardStep.z);
+        // ----- final position -----
+        Vector3 finalMoveTarget = new Vector3(
+            rb.position.x + forwardStep.x,
+            bobbingOffsetWorld.y,
+            rb.position.z + forwardStep.z
+        );
 
         rb.MovePosition(finalMoveTarget);
     }
+
 
     private void MovePassengers()
     {
