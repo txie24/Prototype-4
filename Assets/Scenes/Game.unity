@@ -4997,7 +4997,7 @@ PrefabInstance:
     - target: {fileID: 1507636620937791836, guid: 7097ba7ba649e1f41bba232312bdcbd8,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1507636620937791836, guid: 7097ba7ba649e1f41bba232312bdcbd8,
         type: 3}
@@ -6552,25 +6552,30 @@ PrefabInstance:
       propertyPath: healAmount
       value: 10
       objectReference: {fileID: 0}
+    - target: {fileID: 8482971507751699104, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      propertyPath: spin_direction_hook.z
+      value: 0.3
+      objectReference: {fileID: 0}
     - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.44
+      value: 0.624
       objectReference: {fileID: 0}
     - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.5
+      value: -0.744
       objectReference: {fileID: 0}
     - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.315
       objectReference: {fileID: 0}
     - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.9990852
       objectReference: {fileID: 0}
     - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
         type: 3}
@@ -6580,12 +6585,12 @@ PrefabInstance:
     - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0.04276614
       objectReference: {fileID: 0}
     - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
         type: 3}
@@ -6595,7 +6600,7 @@ PrefabInstance:
     - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: -4.902
       objectReference: {fileID: 0}
     - target: {fileID: 8717640539298162126, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
         type: 3}
@@ -6610,7 +6615,11 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5191501174229072042, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1619865242}
   m_SourcePrefab: {fileID: 100100000, guid: b86ea5e531ed33a4f856a4e09ea4b11a, type: 3}
 --- !u!4 &914652644 stripped
 Transform:
@@ -8947,6 +8956,32 @@ SkinnedMeshRenderer:
     m_Center: {x: 0.17356709, y: 0.018382177, z: 0.00018234551}
     m_Extent: {x: 0.44961277, y: 0.18567774, z: 0.28115946}
   m_DirtyAABB: 0
+--- !u!1 &1619865235 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5191501174229072042, guid: b86ea5e531ed33a4f856a4e09ea4b11a,
+    type: 3}
+  m_PrefabInstance: {fileID: 914652643}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1818360609 &1619865242
+RotationConstraint:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1619865235}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Weight: 1
+  m_RotationAtRest: {x: 0, y: -4.9021325, z: 0}
+  m_RotationOffset: {x: 0, y: -4.9021325, z: 0}
+  m_AffectRotationX: 0
+  m_AffectRotationY: 0
+  m_AffectRotationZ: 1
+  m_Active: 1
+  m_IsLocked: 0
+  m_Sources:
+  - sourceTransform: {fileID: 248863974}
+    weight: 1
 --- !u!4 &1641413753 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 583091413269648081, guid: 76b9d8179905d454e9bf6dcc847231ce,
@@ -9417,7 +9452,7 @@ GameObject:
   - component: {fileID: 1762494307}
   - component: {fileID: 1762494306}
   m_Layer: 5
-  m_Name: Image
+  m_Name: reticle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

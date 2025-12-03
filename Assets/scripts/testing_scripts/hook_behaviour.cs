@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using Unity.Mathematics;
 
 public class hook_behaviour : MonoBehaviour
 {
@@ -7,10 +8,14 @@ public class hook_behaviour : MonoBehaviour
     [SerializeField] public Transform hooked_object_transform;
     [SerializeField] private LineRenderer hookLine;
     [SerializeField] private Transform return_point;
+    [SerializeField] private Vector3 spin_direction_hook;
 
     [Header("Gameplay")]
     public float healAmount = 20f;
     public float destroyDelay = 0.5f;
+
+    public Vector2 xRotationLimits = new Vector2(-45f, 45f);
+    public Vector2 yRotationLimits = new Vector2(-30f, 30f);
 
     public Rigidbody rb_cache;
     public bool isLerping = false;
@@ -28,6 +33,9 @@ public class hook_behaviour : MonoBehaviour
         Vector3 hook_start_position = hook_object.position;
         while (shot_time < hook_shot_duration)
         {
+            transform.LookAt(hook_object);
+            hook_object.localEulerAngles += spin_direction_hook * Time.deltaTime;
+            
             hookLine.SetPosition(0, return_point.position);
             hookLine.SetPosition(1, hook_object.position);
             hook_object.position = Vector3.Lerp(hook_start_position, Destination, shot_time / hook_shot_duration);
@@ -35,6 +43,7 @@ public class hook_behaviour : MonoBehaviour
             yield return new WaitForEndOfFrame();
             shot_time += Time.deltaTime;
         }
+        hook_object.localEulerAngles = Vector3.zero;
         StartCoroutine(Return_Hook(hook_shot_duration));
         yield return null;
     }
@@ -45,13 +54,17 @@ public class hook_behaviour : MonoBehaviour
         Vector3 hook_start_position = hook_object.position;
         while (shot_time < hook_shot_duration)
         {
+
+
+            transform.LookAt(hook_object);
+            
             hookLine.SetPosition(0, return_point.position);
             hookLine.SetPosition(1, hook_object.position);
             hook_object.position = Vector3.Lerp(hook_start_position, return_point.position, shot_time / hook_shot_duration);
             yield return new WaitForEndOfFrame();
             shot_time += Time.deltaTime;
         }
-
+        transform.localEulerAngles = Vector3.zero;
         isLerping = false;
         hook_object.position = return_point.position;
         hookLine.enabled = false;
@@ -85,7 +98,7 @@ public class hook_behaviour : MonoBehaviour
     {
         if (hooked_object_transform != null)
         {
-            hooked_object_transform.parent = null; 
+            hooked_object_transform.parent = null;
 
             if (rb_cache != null)
             {
@@ -108,4 +121,6 @@ public class hook_behaviour : MonoBehaviour
             hooked_object_transform = null;
         }
     }
+    
+    
 }
