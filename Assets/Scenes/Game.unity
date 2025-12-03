@@ -4997,7 +4997,7 @@ PrefabInstance:
     - target: {fileID: 1507636620937791836, guid: 7097ba7ba649e1f41bba232312bdcbd8,
         type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1507636620937791836, guid: 7097ba7ba649e1f41bba232312bdcbd8,
         type: 3}
@@ -5985,6 +5985,7 @@ MonoBehaviour:
   parentConstraint: {fileID: 820539380}
   woodBoatSourceIndex: 0
   shipPivotSourceIndex: 1
+  shipPivot: {fileID: 1882185075}
   climbEndOnDeck: {fileID: 313960160}
   climbHeightOffset: 0
   climbDuration: 1.5
@@ -6081,8 +6082,8 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 820539375}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 97ada40f57d401540b8eafeeba1f0e9c, type: 3}
-  m_Controller: {fileID: 9100000, guid: f6ef3085c5087ae40a352ae36cb63891, type: 2}
+  m_Avatar: {fileID: 9000000, guid: 067eed6340abfa94383b955a0cb27fad, type: 3}
+  m_Controller: {fileID: 9100000, guid: 0096f2761f10865498663f3fd162dc5a, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -6794,7 +6795,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IcebergSpawner
   icebergPrefabs:
   - {fileID: 2602975220198116835, guid: 2acb46b5f21d7714ca9ac66ad4064382, type: 3}
-  - {fileID: 8280039493998787043, guid: 10038933d2c22814dbaff12551a38547, type: 3}
+  - {fileID: 8280039493998787043, guid: 9269ea0b3480d424ea90072161e59db8, type: 3}
   playerTransform: {fileID: 1641413753}
   icebergCount: 40
   oceanLevelY: 0
@@ -10234,6 +10235,8 @@ MonoBehaviour:
   localGravityForce: 20
   playerTransform: {fileID: 1641413753}
   interactionDistance: 1.5
+  positionDelta: {x: 0, y: 0, z: 0}
+  rotationDelta: {x: 0, y: 0, z: 0, w: 0}
 --- !u!54 &1882185077
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -12149,8 +12152,8 @@ Animator:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1681948055380599272}
   m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: 97ada40f57d401540b8eafeeba1f0e9c, type: 3}
-  m_Controller: {fileID: 9100000, guid: f6ef3085c5087ae40a352ae36cb63891, type: 2}
+  m_Avatar: {fileID: 9000000, guid: 067eed6340abfa94383b955a0cb27fad, type: 3}
+  m_Controller: {fileID: 9100000, guid: 0096f2761f10865498663f3fd162dc5a, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 1
@@ -12340,6 +12343,7 @@ MonoBehaviour:
   parentConstraint: {fileID: 492751613742028396}
   woodBoatSourceIndex: 0
   shipPivotSourceIndex: 1
+  shipPivot: {fileID: 1882185075}
   climbEndOnDeck: {fileID: 313960160}
   climbHeightOffset: 0
   climbDuration: 1.5

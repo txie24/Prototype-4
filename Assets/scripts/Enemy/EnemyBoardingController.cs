@@ -8,6 +8,7 @@ public class EnemyBoardingController : MonoBehaviour
     public ParentConstraint parentConstraint;
     public int woodBoatSourceIndex = 0;     // not really used now, but kept for clarity
     public int shipPivotSourceIndex = 1;    // index of ShipPivot in the ParentConstraint
+    public Transform shipPivot;
 
     [Header("climb settings")]
     public Transform climbEndOnDeck;        // point ON THE DECK where he should end up
@@ -84,28 +85,28 @@ public class EnemyBoardingController : MonoBehaviour
 
             yield return null;
         }
-
-        // snap cleanly onto the deck point
+       
+        // Snap cleanly onto the deck point
         transform.position = endPos;
-
-        // === IMPORTANT: attach him to the player boat so he moves with it ===
-        Transform shipPivot = null;
-
-        if (parentConstraint != null &&
-            shipPivotSourceIndex >= 0 &&
-            shipPivotSourceIndex < parentConstraint.sourceCount)
-        {
-            var src = parentConstraint.GetSource(shipPivotSourceIndex);
-            shipPivot = src.sourceTransform;
-        }
 
         if (shipPivot != null)
         {
-            // parent while keeping world position -> no teleport
-            transform.SetParent(shipPivot, true);
+            ShipController ship = shipPivot.GetComponent<ShipController>();
+            if (ship != null)
+            {
+                Rigidbody myRb = GetComponent<Rigidbody>();
+                if (myRb != null)
+                {
+                    // Add this pirate's RB to the ship's conveyor belt system
+                    ship.AddPassengerRigidbody(myRb);
+                }
+            }
         }
-
-        // now he’s a child of the player boat, so if the boat moves, he stays on it
+        else if (ShipController.Instance != null)
+        {
+            Rigidbody myRb = GetComponent<Rigidbody>();
+            if (myRb != null) ShipController.Instance.AddPassengerRigidbody(myRb);
+        }
         if (deckWalker != null)
             deckWalker.BeginWalk();
     }

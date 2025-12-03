@@ -11,26 +11,25 @@ public class EnemyDeckWalker : MonoBehaviour
     public string speedParam = "Speed";
 
     [Header("attack")]
-    public EnemyBoardingAttack attack;   // holds the slashPoints
+    public EnemyBoardingAttack attack;
 
     [Header("ground snapping")]
-    public LayerMask groundMask = ~0;    // layers that count as deck
+    public LayerMask groundMask = ~0;
     public float groundSnapDistance = 5f;
-    public float footHeight = 0.02f;     // how high above the deck the feet sit
+    public float footHeight = 0.02f;
 
     Rigidbody rb;
     Collider col;
 
-    Transform currentTarget;             // chosen slash point
+    Transform currentTarget;
     bool walking;
-    bool lockedIn;                       // true once we've reached the attack spot
+    bool lockedIn;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         col = GetComponent<Collider>();
 
-        // we don't want physics to move this guy on the deck
         if (rb != null)
         {
             rb.isKinematic = true;
@@ -38,18 +37,16 @@ public class EnemyDeckWalker : MonoBehaviour
         }
     }
 
-    // called by EnemyBoardingController after climbing onto the ship
     public void BeginWalk()
     {
         lockedIn = false;
 
         if (attack == null || attack.slashPoints == null || attack.slashPoints.Length == 0)
         {
-            Debug.LogWarning("EnemyDeckWalker.BeginWalk: no slash points set on EnemyBoardingAttack.");
+            Debug.LogWarning("EnemyDeckWalker: no slash points set.");
             return;
         }
 
-        // pick one random slash point as the move target for this boarding
         currentTarget = attack.slashPoints[Random.Range(0, attack.slashPoints.Length)];
         walking = true;
     }
@@ -58,98 +55,116 @@ public class EnemyDeckWalker : MonoBehaviour
     {
         Vector3 up = transform.parent != null ? transform.parent.up : Vector3.up;
 
-        // always keep feet snapped to the deck
-        Vector3 pos = transform.position;
-        SnapToGround(ref pos, up);
-        transform.position = pos;
+        // --- CONVEYOR BELT LOGIC (Stick to Ship) ---
+        // Get the ship's movement for this frame
+        Vector3 shipMoveDelta = Vector3.zero;
+        Quaternion shipRotDelta = Quaternion.identity;
+        Vector3 shipPos = Vector3.zero;
 
-        // once we are locked in, never try to move again – just keep the body upright
+        if (ShipController.Instance != null)
+        {
+            shipMoveDelta = ShipController.Instance.positionDelta;
+            shipRotDelta = ShipController.Instance.rotationDelta;
+            shipPos = ShipController.Instance.transform.position; // Assuming pivot is at transform.position
+            // Actually, we need the Rigidbody position of the ship, which is likely on the same object
+            if (ShipController.Instance.GetComponent<Rigidbody>() != null)
+                shipPos = ShipController.Instance.GetComponent<Rigidbody>().position;
+        }
+
+        // Apply Ship Rotation Leverage (Swing)
+        // If the ship rotates, we need to rotate around the ship's center
+        Vector3 currentPos = transform.position;
+        if (ShipController.Instance != null)
+        {
+            Vector3 offset = currentPos - shipPos;
+            Vector3 rotatedOffset = shipRotDelta * offset;
+            shipMoveDelta += (rotatedOffset - offset);
+        }
+
+        // Apply Ship Movement immediately
+        currentPos += shipMoveDelta;
+
+        // Update our position so subsequent calculations use the "moved" position
+        transform.position = currentPos;
+
+        // --- WALKING LOGIC ---
+        // 1. LOCKED IN (Arrived)
         if (lockedIn)
         {
+            SnapToGround(ref currentPos, up);
+            transform.position = currentPos;
             KeepUpright(up);
-
-            if (animator && !string.IsNullOrEmpty(speedParam))
-                animator.SetFloat(speedParam, 0f);
-
+            if (animator) animator.SetFloat(speedParam, 0f);
             return;
         }
 
+        // 2. IDLE / WAITING
         if (!walking || currentTarget == null)
         {
+            SnapToGround(ref currentPos, up);
+            transform.position = currentPos;
             KeepUpright(up);
-            if (animator && !string.IsNullOrEmpty(speedParam))
-                animator.SetFloat(speedParam, 0f);
+            if (animator) animator.SetFloat(speedParam, 0f);
             return;
         }
 
-        // move towards chosen slash point on the deck plane
-        Vector3 toTarget = currentTarget.position - transform.position;
+        // 3. MOVING TO TARGET
+        Vector3 toTarget = currentTarget.position - transform.position; // transform.position includes ship move now
         Vector3 flat = Vector3.ProjectOnPlane(toTarget, up);
         float dist = flat.magnitude;
 
         if (dist <= stopDistance)
         {
-            // reached attack position: snap, lock, and tell the attack script to start hitting the ship
             walking = false;
             lockedIn = true;
 
-            // small snap in case we stopped just short of the slash point
-            Vector3 lockPos = currentTarget.position;
-            SnapToGround(ref lockPos, up);
-            transform.position = lockPos;
+            // Snap to target
+            currentPos = currentTarget.position;
+            SnapToGround(ref currentPos, up);
+            transform.position = currentPos;
 
             KeepUpright(up);
-
-            if (animator && !string.IsNullOrEmpty(speedParam))
-                animator.SetFloat(speedParam, 0f);
-
-            if (attack != null)
-                attack.BeginAttack();
-
+            if (animator) animator.SetFloat(speedParam, 0f);
+            if (attack != null) attack.BeginAttack();
             return;
         }
 
+        // Move towards target
         Vector3 dir = flat.normalized;
+        currentPos += dir * moveSpeed * Time.fixedDeltaTime;
 
-        // smooth movement
-        transform.position += dir * moveSpeed * Time.deltaTime;
+        // Final Snap
+        SnapToGround(ref currentPos, up);
+        transform.position = currentPos;
 
-        // smooth rotation: face movement direction, upright relative to deck
+        // Rotation
         Quaternion lookRot = Quaternion.LookRotation(dir, up);
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, 12f * Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, 10f * Time.fixedDeltaTime);
 
-        if (animator && !string.IsNullOrEmpty(speedParam))
-            animator.SetFloat(speedParam, moveSpeed);
+        if (animator) animator.SetFloat(speedParam, moveSpeed);
     }
 
     void KeepUpright(Vector3 up)
     {
         Vector3 fwd = Vector3.ProjectOnPlane(transform.forward, up);
-        if (fwd.sqrMagnitude < 0.0001f)
-            fwd = Vector3.ProjectOnPlane(Vector3.forward, up);
-
+        if (fwd.sqrMagnitude < 0.0001f) fwd = Vector3.ProjectOnPlane(Vector3.forward, up);
         Quaternion uprightRot = Quaternion.LookRotation(fwd.normalized, up);
-        transform.rotation = Quaternion.Slerp(transform.rotation, uprightRot, 12f * Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(transform.rotation, uprightRot, 10f * Time.fixedDeltaTime);
     }
 
     void SnapToGround(ref Vector3 position, Vector3 up)
     {
-        // raycast down, ignoring our own collider / children
         Vector3 origin = position + up * 1f;
         float remaining = groundSnapDistance;
         RaycastHit hit;
 
-        while (remaining > 0f &&
-               Physics.Raycast(origin, -up, out hit, remaining, groundMask, QueryTriggerInteraction.Ignore))
+        while (remaining > 0f && Physics.Raycast(origin, -up, out hit, remaining, groundMask, QueryTriggerInteraction.Ignore))
         {
-            if (hit.collider != null &&
-                hit.collider != col &&
-                !hit.collider.transform.IsChildOf(transform))
+            if (hit.collider != null && hit.collider != col && !hit.collider.transform.IsChildOf(transform))
             {
                 position = hit.point + up * footHeight;
                 return;
             }
-
             float travelled = hit.distance + 0.01f;
             origin = hit.point - up * 0.01f;
             remaining -= travelled;

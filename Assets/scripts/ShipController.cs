@@ -53,6 +53,9 @@ public class ShipController : MonoBehaviour
     // History
     private Vector3 _prevPosition;
     private Quaternion _prevRotation;
+    public Vector3 positionDelta;
+    public Quaternion rotationDelta;
+
 
     // Passenger Lists
     private List<CharacterController> _passengerControllers = new List<CharacterController>();
@@ -188,14 +191,18 @@ public class ShipController : MonoBehaviour
             rb.position.z + forwardStep.z
         );
 
+        positionDelta = finalMoveTarget - rb.position;
+        // Rotation delta: diff between current and next rotation
+        rotationDelta = finalRotation * Quaternion.Inverse(rb.rotation);
+
         rb.MovePosition(finalMoveTarget);
     }
 
 
     private void MovePassengers()
     {
-        Vector3 positionDelta = rb.position - _prevPosition;
-        Quaternion rotationDelta = rb.rotation * Quaternion.Inverse(_prevRotation);
+        positionDelta = rb.position - _prevPosition;
+        rotationDelta = rb.rotation * Quaternion.Inverse(_prevRotation);
 
         for (int i = _passengerControllers.Count - 1; i >= 0; i--)
         {
@@ -218,7 +225,23 @@ public class ShipController : MonoBehaviour
             Rigidbody pRb = _passengerRigidbodies[i];
             if (pRb == null) { _passengerRigidbodies.RemoveAt(i); continue; }
 
-            pRb.AddForce(-transform.up * localGravityForce * Time.deltaTime, ForceMode.VelocityChange);
+            if (pRb.isKinematic)
+            {
+                // Kinematic bodies ignore AddForce, so we must MovePosition manually
+                Vector3 finalPos = pRb.position + positionDelta;
+
+                // Rotation leverage
+                Vector3 offset = pRb.position - rb.position;
+                Vector3 rotatedOffset = rotationDelta * offset;
+                finalPos += (rotatedOffset - offset);
+
+                pRb.MovePosition(finalPos);
+            }
+            else
+            {
+                // Dynamic bodies get gravity
+                pRb.AddForce(-transform.up * localGravityForce, ForceMode.Acceleration);
+            }
         }
     }
 
