@@ -13,16 +13,10 @@ public class EnemySpawner : MonoBehaviour
     public float spawnRadiusMin = 30f;
     public float spawnRadiusMax = 60f;
     public int maxEnemies = 5;
-    public float boatLifetime = 30f;
+    public float boatLifetime = 20f;
 
-    [Header("Global References (Scene Objects)")]
+    [Header("Global References")]
     public Transform playerShipPivot;
-
-    public Transform dockLeft;
-    public Transform dockRight;
-
-    [Header("Pirate Destinations")]
-    public Transform climbEndPoint;   // where they climb onto deck
 
     private float _timer;
     private List<GameObject> _activeEnemies = new List<GameObject>();
@@ -33,18 +27,11 @@ public class EnemySpawner : MonoBehaviour
         {
             playerShipPivot = ShipController.Instance.transform;
         }
-
-        if (dockLeft == null || dockRight == null)
-        {
-            Debug.LogWarning("EnemySpawner: please assign dockLeft and dockRight in the inspector.");
-        }
     }
 
     void Update()
     {
         if (playerShipPivot == null) return;
-
-        // cleanup destroyed boats from list
         _activeEnemies.RemoveAll(item => item == null);
 
         if (_activeEnemies.Count < maxEnemies)
@@ -60,16 +47,10 @@ public class EnemySpawner : MonoBehaviour
 
     void SpawnEnemyUnit()
     {
-        // safety: don't even try if prefabs are missing or destroyed
-        if (woodBoatPrefab == null)
+        // safety checks
+        if (woodBoatPrefab == null || piratePrefab == null)
         {
-            Debug.LogWarning("EnemySpawner: woodBoatPrefab is missing or was destroyed. drag a prefab into this field, not a scene object.");
-            return;
-        }
-
-        if (piratePrefab == null)
-        {
-            Debug.LogWarning("EnemySpawner: piratePrefab is missing or was destroyed. drag a prefab into this field, not a scene object.");
+            Debug.LogWarning("EnemySpawner: prefabs missing.");
             return;
         }
 
@@ -88,17 +69,15 @@ public class EnemySpawner : MonoBehaviour
         // boat
         GameObject newBoat = Instantiate(woodBoatPrefab, spawnPos, boatRot);
 
-        // auto cleanup boat after lifetime (extra safety)
+        BoatFollower boatFollower = newBoat.GetComponent<BoatFollower>();
+        if (boatFollower != null)
+        {
+            boatFollower.playerBoat = playerShipPivot;
+        }
+
+        // auto cleanup boat after lifetime
         if (boatLifetime > 0f)
             Destroy(newBoat, boatLifetime);
-
-        // boat follower setup
-        BoatFollower boatScript = newBoat.GetComponent<BoatFollower>();
-        if (boatScript != null)
-        {
-            boatScript.playerBoat = playerShipPivot;
-            boatScript.dockingPoints = new Transform[] { dockLeft, dockRight };
-        }
 
         // pirate
         Vector3 piratePos = spawnPos + Vector3.up * 0.5f;
@@ -109,30 +88,20 @@ public class EnemySpawner : MonoBehaviour
         if (boardingCtrl != null)
         {
             boardingCtrl.enemyBoat = newBoat.GetComponent<BoatFollower>();
-            boardingCtrl.climbEndOnDeck = climbEndPoint;
         }
 
         // attack
         EnemyBoardingAttack attackCtrl = newPirate.GetComponent<EnemyBoardingAttack>();
         if (attackCtrl != null)
         {
-            // we still try to set it here, but the attack script will also auto-find if this is null
             ShipHealth shipHealth = playerShipPivot.GetComponent<ShipHealth>();
             if (shipHealth != null)
                 attackCtrl.targetShip = shipHealth;
         }
 
-        // deck walker (nothing extra needed)
-        EnemyDeckWalker walkerCtrl = newPirate.GetComponent<EnemyDeckWalker>();
-        if (walkerCtrl != null)
-        {
-            // it will choose a slash point in BeginWalk()
-        }
-
-        // constraint so pirate sticks to boat, then later switches to ship
+        // constraint setup
         SetupPirateConstraint(newPirate, newBoat.transform);
 
-        // track the boat so we limit concurrent boats
         _activeEnemies.Add(newBoat);
     }
 
@@ -149,7 +118,7 @@ public class EnemySpawner : MonoBehaviour
         boatSource.weight = 1.0f;
         sources.Add(boatSource);
 
-        // source 1 = player ship pivot (weight 0, controller will switch later)
+        // source 1 = player ship pivot
         if (playerShipPivot != null)
         {
             ConstraintSource shipSource = new ConstraintSource();
