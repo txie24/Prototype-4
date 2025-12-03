@@ -4,25 +4,27 @@ using System.Collections;
 public class BoosterPivot : MonoBehaviour
 {
     [Header("Ship root (same object that has ShipController)")]
-    public Transform shipRoot;   // e.g. WaterBlock_50m
+    public Transform shipRoot;
 
     [Header("Arm + Poses")]
-    public Transform arm;           // LeftPivot / RightPivot (the moving arm)
-    public Transform stowedPose;    // LeftRocketStow / RightRocketStow
-    public Transform deployedPose;  // LeftRocketDeploy / RightRocketDeploy
+    public Transform arm;
+    public Transform stowedPose;
+    public Transform deployedPose;
     public float moveTime = 0.75f;
 
     [Header("Booster Settings")]
     public int boosterLevel = 2;
     public float baseThrust = 500f;
-    public Rigidbody boatRb;        // ship rigidbody
+    public Rigidbody boatRb;
     public ParticleSystem boosterFx;
+
+    [HideInInspector]
+    public bool canThrust = false;
 
     bool isDeployed;
     bool isMoving;
     Coroutine moveRoutine;
 
-    // cached poses in SHIP-LOCAL space
     Vector3 stowedLocalPos;
     Quaternion stowedLocalRot;
     Vector3 deployedLocalPos;
@@ -31,12 +33,11 @@ public class BoosterPivot : MonoBehaviour
     void Awake()
     {
         if (shipRoot == null)
-            shipRoot = transform.root;   // fallback
+            shipRoot = transform.root;
 
         if (arm == null)
             arm = transform;
 
-        // cache stow/deploy in shipRoot local space
         stowedLocalPos = shipRoot.InverseTransformPoint(stowedPose.position);
         stowedLocalRot = Quaternion.Inverse(shipRoot.rotation) * stowedPose.rotation;
 
@@ -60,10 +61,10 @@ public class BoosterPivot : MonoBehaviour
     {
         isMoving = true;
 
-        Vector3 startPos   = deploy ? stowedLocalPos   : deployedLocalPos;
-        Quaternion startRot = deploy ? stowedLocalRot  : deployedLocalRot;
-        Vector3 endPos     = deploy ? deployedLocalPos : stowedLocalPos;
-        Quaternion endRot   = deploy ? deployedLocalRot: stowedLocalRot;
+        Vector3 startPos = deploy ? stowedLocalPos : deployedLocalPos;
+        Quaternion startRot = deploy ? stowedLocalRot : deployedLocalRot;
+        Vector3 endPos = deploy ? deployedLocalPos : stowedLocalPos;
+        Quaternion endRot = deploy ? deployedLocalRot : stowedLocalRot;
 
         float t = 0f;
         while (t < 1f)
@@ -71,18 +72,15 @@ public class BoosterPivot : MonoBehaviour
             t += Time.deltaTime / moveTime;
             float k = Mathf.SmoothStep(0f, 1f, t);
 
-            // interpolate in ship-local space
             Vector3 interpLocalPos = Vector3.Lerp(startPos, endPos, k);
             Quaternion interpLocalRot = Quaternion.Slerp(startRot, endRot, k);
 
-            // then convert back to world, using the CURRENT ship transform
             arm.position = shipRoot.TransformPoint(interpLocalPos);
             arm.rotation = shipRoot.rotation * interpLocalRot;
 
             yield return null;
         }
 
-        // snap to final
         arm.position = shipRoot.TransformPoint(endPos);
         arm.rotation = shipRoot.rotation * endRot;
 
@@ -102,11 +100,13 @@ public class BoosterPivot : MonoBehaviour
     {
         if (boosterFx != null)
             boosterFx.Stop();
+
+        canThrust = false;
     }
 
     void FixedUpdate()
     {
-        if (!isDeployed || boatRb == null) return;
+        if (!isDeployed || boatRb == null || !canThrust) return;
 
         float thrust = baseThrust * boosterLevel;
         boatRb.AddForce(arm.forward * thrust, ForceMode.Force);

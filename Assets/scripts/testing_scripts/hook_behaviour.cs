@@ -1,7 +1,5 @@
 using UnityEngine;
-
 using System.Collections;
-
 
 public class hook_behaviour : MonoBehaviour
 {
@@ -22,11 +20,9 @@ public class hook_behaviour : MonoBehaviour
         hookLine.enabled = false;
     }
 
-
     public IEnumerator Hook_Shoot(Vector3 Destination, float hook_shot_duration)
     {
         hookLine.enabled = true;
-
         isLerping = true;
         float shot_time = 0;
         Vector3 hook_start_position = hook_object.position;
@@ -35,10 +31,7 @@ public class hook_behaviour : MonoBehaviour
             hookLine.SetPosition(0, return_point.position);
             hookLine.SetPosition(1, hook_object.position);
             hook_object.position = Vector3.Lerp(hook_start_position, Destination, shot_time / hook_shot_duration);
-            if (hooked_object_transform != null)
-            {
-                break;
-            }
+            if (hooked_object_transform != null) break;
             yield return new WaitForEndOfFrame();
             shot_time += Time.deltaTime;
         }
@@ -58,31 +51,61 @@ public class hook_behaviour : MonoBehaviour
             yield return new WaitForEndOfFrame();
             shot_time += Time.deltaTime;
         }
-        
+
         isLerping = false;
         hook_object.position = return_point.position;
         hookLine.enabled = false;
 
-        // Only if something hooked heal
         if (hooked_object_transform != null)
         {
-            if (ShipController.Instance != null)
+
+            if (hooked_object_transform.CompareTag("Fuel"))
             {
-                ShipHealth health = ShipController.Instance.GetComponent<ShipHealth>();
-                if (health != null)
+                hooked_object_transform.localPosition = Vector3.zero;
+                Debug.Log("Holding Fuel. Press Fire (Right Click) to Drop.");
+            }
+            else
+            {
+                if (ShipController.Instance != null)
                 {
-                    health.Heal(healAmount);
+                    ShipHealth health = ShipController.Instance.GetComponent<ShipHealth>();
+                    if (health != null) health.Heal(healAmount);
                     Debug.Log("Item retrieved! Ship repaired.");
                 }
+
+                hooked_object_transform.parent = null;
+                Destroy(hooked_object_transform.gameObject, destroyDelay);
+                hooked_object_transform = null;
             }
+        }
+        yield return null;
+    }
 
-            hooked_object_transform.parent = null;
+    public void DropHeldItem()
+    {
+        if (hooked_object_transform != null)
+        {
+            hooked_object_transform.parent = null; 
 
-            Destroy(hooked_object_transform.gameObject, destroyDelay);
+            if (rb_cache != null)
+            {
+                rb_cache.isKinematic = false;
+                rb_cache.useGravity = true;
+                rb_cache = null;
+            }
+            else
+            {
+                Rigidbody rb = hooked_object_transform.GetComponent<Rigidbody>();
+                if (rb != null)
+                {
+                    rb.isKinematic = false;
+                    rb.useGravity = true;
+                }
+            }
+            Rigidbody finalRb = hooked_object_transform.GetComponent<Rigidbody>();
+            if (finalRb != null) finalRb.AddForce(transform.forward * 2f, ForceMode.Impulse);
 
             hooked_object_transform = null;
         }
-
-        yield return null;
     }
 }

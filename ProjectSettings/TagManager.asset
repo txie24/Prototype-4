@@ -8,6 +8,7 @@ TagManager:
   - Water
   - NPC
   - Boat
+  - Fuel
   layers:
   - Default
   - TransparentFX
