@@ -25,9 +25,15 @@ public class ShipController : MonoBehaviour
     [Header("Collision & Health")]
     [Tooltip("Layers the ship should collide with (e.g. Default). Uncheck Player/Water.")]
     public LayerMask obstacleLayers = 1;
+
     [Tooltip("Drag the ShipHealth script here.")]
     public ShipHealth shipHealth;
     public float damageInterval = 1.0f; // How often to take damage (in seconds)
+
+    [Header("Audio")]
+    public AudioClip crashSound;
+    [Range(0f, 1f)] public float crashVolume = 1.0f;
+    private AudioSource _audioSource;
 
     [Header("Passengers")]
     public float localGravityForce = 20f;
@@ -89,6 +95,12 @@ public class ShipController : MonoBehaviour
         {
             GameObject player = GameObject.FindWithTag("Player");
             if (player != null) playerTransform = player.transform;
+        }
+
+        _audioSource = GetComponent<AudioSource>();
+        if (_audioSource == null)
+        {
+            _audioSource = gameObject.AddComponent<AudioSource>();
         }
 
         if (shipHealth == null)
@@ -163,6 +175,11 @@ public class ShipController : MonoBehaviour
                     shipHealth.TakeDamage(damageAmount);
                     _nextDamageTime = Time.time + damageInterval;
                     Debug.Log($"Ship hit iceberg! Took {damageAmount} damage.");
+
+                    if (crashSound != null && _audioSource != null)
+                    {
+                        _audioSource.PlayOneShot(crashSound, crashVolume);
+                    }
                 }
 
                 // Slide Logic

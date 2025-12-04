@@ -13,8 +13,12 @@ public class PlayerCombat : MonoBehaviour
 
     public LayerMask enemyLayers;
 
+    [Header("Audio")]
+    public AudioClip slashSound;
+
     [Header("References")]
     public Transform attackPoint;
+    [Range(0f, 1f)] public float slashVolume = 1f;
 
     [Header("Animation")]
     public string attackAnimTrigger = "Attack";
@@ -51,6 +55,11 @@ public class PlayerCombat : MonoBehaviour
 
     void Attack()
     {
+        if (slashSound != null)
+        {
+            AudioSource.PlayClipAtPoint(slashSound, transform.position, slashVolume);
+        }
+
         // Shell for what the animation code would look like
         if (_animator != null)
         {

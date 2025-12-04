@@ -6,6 +6,10 @@ public class EnemyHealth : MonoBehaviour
     public float maxHealth = 100f;
     public float currentHealth;
 
+    [Header("Audio")]
+    public AudioClip deathSound;
+    [Range(0f, 1f)] public float deathVolume = 1f;
+
     [Header("Death Settings")]
     public float destroyDelay = 0f;
 
@@ -30,8 +34,6 @@ public class EnemyHealth : MonoBehaviour
 
     private void Die()
     {
-        Debug.Log($"{name} died!");
-
         // if this is a boarding pirate, kill its boat so the spawner can spawn again
         if (destroyBoatOnDeath)
         {
@@ -40,6 +42,10 @@ public class EnemyHealth : MonoBehaviour
             {
                 Destroy(boarding.enemyBoat.gameObject);
             }
+        }
+        if (deathSound != null)
+        {
+            AudioSource.PlayClipAtPoint(deathSound, transform.position, deathVolume);
         }
 
         Collider col = GetComponent<Collider>();
