@@ -4955,11 +4955,11 @@ MonoBehaviour:
   - {fileID: 2602975220198116835, guid: 2acb46b5f21d7714ca9ac66ad4064382, type: 3}
   - {fileID: 8280039493998787043, guid: 9269ea0b3480d424ea90072161e59db8, type: 3}
   playerTransform: {fileID: 1641413753}
-  icebergCount: 40
+  icebergCount: 50
   oceanLevelY: 0
   initialMinDistance: 250
   initialMaxDistance: 500
-  respawnMinDistance: 350
+  respawnMinDistance: 500
   respawnMaxDistance: 650
   spawnOppositeSide: 1
   despawnDistance: 700
@@ -5077,7 +5077,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Loot_Spawner_Behaviour
   Map_Data_Cache: {fileID: 0}
   scale: 30
-  cell_count: 10
+  cell_count: 25
   seed: 200
 --- !u!114 &1046752749
 MonoBehaviour:
@@ -6612,7 +6612,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Loot_Spawner_Behaviour
   Map_Data_Cache: {fileID: 0}
   scale: 30
-  cell_count: 10
+  cell_count: 25
   seed: 100
 --- !u!114 &1784105239
 MonoBehaviour:
