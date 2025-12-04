@@ -6809,7 +6809,7 @@ MonoBehaviour:
   pitchSpeed: 0.6
   obstacleLayers:
     serializedVersion: 2
-    m_Bits: 1
+    m_Bits: 2048
   shipHealth: {fileID: 0}
   damageInterval: 1
   localGravityForce: 20

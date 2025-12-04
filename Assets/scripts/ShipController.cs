@@ -146,31 +146,27 @@ public class ShipController : MonoBehaviour
         Quaternion finalRotation = Quaternion.Euler(pitch, currentYaw, roll);
         rb.MoveRotation(finalRotation);
 
-        // forward movement this frame
+        // Forward movement this frame
         Vector3 forwardStep = transform.forward * forwardSpeed * Time.deltaTime;
 
-        // ----- collision + damage check (Raycast instead of SweepTest) -----
-        RaycastHit hit;
-        Vector3 origin = rb.position;                                // start from ship position
-        float maxDistance = forwardStep.magnitude + 0.1f;
-
-        if (Physics.Raycast(origin, forwardStep.normalized, out hit, maxDistance, ~0, QueryTriggerInteraction.Ignore))
+        // Collision Check
+        if (rb.SweepTest(forwardStep.normalized, out RaycastHit hit, forwardStep.magnitude + 0.1f, QueryTriggerInteraction.Ignore))
         {
-            // only treat it as an obstacle if it's on one of the obstacleLayers
             if (((1 << hit.collider.gameObject.layer) & obstacleLayers) != 0)
             {
+                // Damage Logic
                 if (shipHealth != null && Time.time >= _nextDamageTime)
                 {
-                    // 30% of max health
                     float damageAmount = shipHealth.maxHealth * 0.30f;
                     shipHealth.TakeDamage(damageAmount);
-
                     _nextDamageTime = Time.time + damageInterval;
                     Debug.Log($"Ship hit iceberg! Took {damageAmount} damage.");
                 }
 
-                // slide along surface instead of sticking
+                // Slide Logic
                 forwardStep = Vector3.ProjectOnPlane(forwardStep, hit.normal);
+
+                Debug.DrawRay(hit.point, hit.normal, Color.red, 1.0f);
             }
         }
 

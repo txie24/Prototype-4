@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 4958870025001524519}
   - component: {fileID: 7343342372496846025}
   - component: {fileID: 3135908818638615740}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Small_Rock_002_LOD1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -100,7 +100,7 @@ GameObject:
   - component: {fileID: 4660370044587597957}
   - component: {fileID: 4046447871235809278}
   - component: {fileID: 1250812353122943001}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Small_Rock_002_LOD2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -189,7 +189,7 @@ GameObject:
   - component: {fileID: 650892664549126524}
   - component: {fileID: 7430738471467662651}
   - component: {fileID: 3507465409266139308}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Small_Rock_002_LOD0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -278,7 +278,7 @@ GameObject:
   - component: {fileID: 8280039493999207875}
   - component: {fileID: 4603160766908105373}
   - component: {fileID: 7968398787270811733}
-  m_Layer: 0
+  m_Layer: 11
   m_Name: Iceberg2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
