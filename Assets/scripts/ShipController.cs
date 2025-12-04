@@ -165,8 +165,6 @@ public class ShipController : MonoBehaviour
 
                 // Slide Logic
                 forwardStep = Vector3.ProjectOnPlane(forwardStep, hit.normal);
-
-                Debug.DrawRay(hit.point, hit.normal, Color.red, 1.0f);
             }
         }
 
