@@ -4483,7 +4483,7 @@ MonoBehaviour:
   rocketLever: {fileID: 252366277}
   deckInventory: {fileID: 611596831}
   boosters: []
-  shipController: {fileID: 0}
+  shipController: {fileID: 1882185076}
   playerTransform: {fileID: 1641413753}
   refuelPoints:
   - {fileID: 1959967921}
@@ -4498,6 +4498,8 @@ MonoBehaviour:
   hudFuelSlider: {fileID: 81763714}
   promptCanvas: {fileID: 1377423487}
   statusText: {fileID: 1788234162}
+  boostSound: {fileID: 8300000, guid: bd23dfc1d8806f84da85a6591ffc2763, type: 3}
+  soundVolume: 1
 --- !u!114 &711614349
 MonoBehaviour:
   m_ObjectHideFlags: 0

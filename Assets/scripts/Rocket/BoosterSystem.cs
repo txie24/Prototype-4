@@ -33,6 +33,11 @@ public class BoosterSystem : MonoBehaviour
     public GameObject promptCanvas;
     public TextMeshProUGUI statusText;
 
+    [Header("Audio")]
+    public AudioClip boostSound;
+    [Range(0f, 1f)] public float soundVolume = 1.0f;
+    private AudioSource _audioSource;
+
     private float _refuelTimer = 0f;
 
     void Start()
@@ -53,6 +58,17 @@ public class BoosterSystem : MonoBehaviour
             hudFuelSlider.maxValue = 1f;
             hudFuelSlider.value = currentFuel / maxFuel;
         }
+
+        // Setup Audio Source
+        _audioSource = GetComponent<AudioSource>();
+        if (_audioSource == null)
+        {
+            _audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        _audioSource.clip = boostSound;
+        _audioSource.loop = true; // Important: Loop the sound while engine is on
+        _audioSource.playOnAwake = false;
+        _audioSource.volume = soundVolume;
     }
 
     void Update()
@@ -166,5 +182,18 @@ public class BoosterSystem : MonoBehaviour
     void SetThrust(bool state)
     {
         foreach (var b in boosters) if (b) b.canThrust = state;
+
+        // Handle Audio
+        if (_audioSource && boostSound)
+        {
+            if (state)
+            {
+                if (!_audioSource.isPlaying) _audioSource.Play();
+            }
+            else
+            {
+                if (_audioSource.isPlaying) _audioSource.Stop();
+            }
+        }
     }
 }
