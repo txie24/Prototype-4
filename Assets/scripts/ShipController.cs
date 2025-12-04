@@ -149,6 +149,8 @@ public class ShipController : MonoBehaviour
         // Forward movement this frame
         Vector3 forwardStep = transform.forward * forwardSpeed * Time.deltaTime;
 
+        Physics.SyncTransforms();
+
         // Collision Check
         if (rb.SweepTest(forwardStep.normalized, out RaycastHit hit, forwardStep.magnitude + 0.1f, QueryTriggerInteraction.Ignore))
         {
